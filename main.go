@@ -10,7 +10,7 @@ import (
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 
-	//dal.InitDB()
+	//dal.InitDB()数据库
 	//
 	//dal.InitTls()
 
