@@ -1,6 +1,7 @@
 package EdgeTB_backend
 
 import (
+	"EdgeTB-backend/dal"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 
-	//dal.InitDB()数据库
+	dal.InitDB()
 	//
 	//dal.InitTls()
 
@@ -49,7 +50,7 @@ func Cors() gin.HandlerFunc {
 			context.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers,Cache-Control,Content-Language,Content-Type,Expires,Last-Modified,Pragma,FooBar")
 			context.Header("Access-Control-Max-Age", "172800")
 			context.Header("Access-Control-Allow-Credentials", "false")
-			context.Set("content-type", "application/json") //// 设置返回格式是json
+			context.Set("content-type", "application/json") // 设置返回格式是json
 		}
 
 		if method == "OPTIONS" {
