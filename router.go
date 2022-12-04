@@ -1,4 +1,4 @@
-package EdgeTB_backend
+package main
 
 import (
 	"EdgeTB-backend/handler"

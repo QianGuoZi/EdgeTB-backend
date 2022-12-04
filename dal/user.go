@@ -3,9 +3,8 @@ package dal
 import (
 	"errors"
 	"fmt"
-	"log"
-
 	"golang.org/x/crypto/bcrypt"
+	"log"
 )
 
 // CheckUser 查看用户是否已存在
@@ -13,6 +12,7 @@ func CheckUser(userName string) (User, error) {
 	user := User{}
 	DB.Model(&User{}).Where("user_name = ?", userName).First(&user)
 	if user.Id != 0 {
+		log.Printf("[CheckUser] 用户已存在")
 		return user, errors.New("用户已存在")
 	}
 	return user, nil
@@ -22,7 +22,8 @@ func CheckUser(userName string) (User, error) {
 func AddUser(user User) (int64, error) {
 	result := DB.Model(&User{}).Create(&user)
 	if result.Error != nil {
-		return 0, errors.New("数据库创建用户记录失败")
+		log.Printf("[Register] 数据库创建用户记录失败")
+		return 0, result.Error
 	}
 	return user.Id, nil
 }

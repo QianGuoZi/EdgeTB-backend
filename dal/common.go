@@ -10,7 +10,7 @@ type User struct {
 	Role      string    `json:"role,omitempty" gorm:"type:varchar(10)"`
 	Pwd       string    `json:"password,omitempty" gorm:"type:varchar(100)"`
 	Salt      string    `json:"salt,omitempty" gorm:"type:char(4)"`
-	Email     string    `json:"company,omitempty" gorm:"type:varchar(100)"`
+	Email     string    `json:"email,omitempty" gorm:"type:varchar(100)"`
 	CreatedAt time.Time `json:"-" gorm:"index:,sort:desc"`
 }
 

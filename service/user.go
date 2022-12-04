@@ -6,9 +6,9 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"log"
 	"math/rand"
 	"strings"
 	"time"
@@ -27,16 +27,17 @@ func randSalt() string {
 
 // Register 用userName和password注册用户
 func Register(userName, password string) (id int64, err error) {
+	//查看用户是否存在
 	user, err := dal.CheckUser(userName)
 	if err != nil {
 		return 0, errors.New("该用户已存在")
 	}
+
 	//设置salt，并生成pwd
 	user.Salt = randSalt()
 	pw := md5.New()
 	pw.Write([]byte(password))
 	password = hex.EncodeToString(pw.Sum(nil))
-	fmt.Println("md5:", password)
 	pwd, err := EncodePassword(userName, password, user.Salt)
 	if err != nil {
 		return 0, err
@@ -46,7 +47,7 @@ func Register(userName, password string) (id int64, err error) {
 	user.UserName = userName
 	user.Pwd = pwd
 
-	fmt.Println("注册的User为：", user)
+	log.Printf("[Register] database new user=%+v", user)
 	returnId, err := dal.AddUser(user)
 	if err != nil {
 		return 0, err

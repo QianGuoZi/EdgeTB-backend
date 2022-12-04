@@ -1,4 +1,4 @@
-package EdgeTB_backend
+package main
 
 import (
 	"EdgeTB-backend/dal"
@@ -11,13 +11,13 @@ import (
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 
+	//初始化数据库
 	dal.InitDB()
-	//
-	//dal.InitTls()
 
 	r := gin.Default()
 	r.Use(Cors())
 
+	//初始化路由
 	initRouter(r)
 
 	err := r.Run(":8080") // http端口
@@ -27,6 +27,7 @@ func main() {
 
 }
 
+// Cors 跨域
 func Cors() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		method := context.Request.Method
