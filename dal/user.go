@@ -28,18 +28,18 @@ func AddUser(user User) (int64, error) {
 	return user.Id, nil
 }
 
-// SearchUser 判断userName password role是否正确
+// SearchUser 判断userName password是否正确
 func SearchUser(userName, password string) (bool, error) {
 	user := User{}
 	DB.Model(&User{}).Where("user_name = ?", userName).First(&user)
-	fmt.Println("查询的user", user)
+	log.Printf("[SearchUser] search user=%+v", user)
 	if user.UserName != userName {
-		fmt.Print("用户名错误")
+		log.Printf("[SearchUser] 用户名错误")
 		return false, errors.New("用户名错误")
 	}
 	err2 := bcrypt.CompareHashAndPassword([]byte(user.Pwd), []byte(userName+password+user.Salt))
 	if err2 != nil {
-		fmt.Print("密码错误")
+		log.Printf("[SearchUser] 密码错误")
 		return false, errors.New("密码错误")
 	}
 	return true, nil

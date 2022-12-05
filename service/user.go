@@ -3,8 +3,6 @@ package service
 import (
 	"EdgeTB-backend/dal"
 	"bytes"
-	"crypto/md5"
-	"encoding/hex"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -35,9 +33,10 @@ func Register(userName, password string) (id int64, err error) {
 
 	//设置salt，并生成pwd
 	user.Salt = randSalt()
-	pw := md5.New()
-	pw.Write([]byte(password))
-	password = hex.EncodeToString(pw.Sum(nil))
+	//pw := md5.New()
+	//pw.Write([]byte(password))
+	//password = hex.EncodeToString(pw.Sum(nil))
+	//fmt.Println("md5:", password)
 	pwd, err := EncodePassword(userName, password, user.Salt)
 	if err != nil {
 		return 0, err
@@ -56,7 +55,7 @@ func Register(userName, password string) (id int64, err error) {
 	return returnId, nil
 }
 
-//Login 使用userName password role 登陆，返回token和time
+//Login 使用userName password登陆，返回token和time
 func Login(userName, password string) (string, time.Time, error) {
 	result, err := dal.SearchUser(userName, password)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+	//https://liwh011.github.io/edgetb-openplatform-frontend/
 	gin.SetMode(gin.ReleaseMode)
 
 	//初始化数据库
@@ -20,7 +21,7 @@ func main() {
 	//初始化路由
 	initRouter(r)
 
-	err := r.Run(":8080") // http端口
+	err := r.Run(":3000") // http端口
 	if err != nil {
 		panic(err)
 	}

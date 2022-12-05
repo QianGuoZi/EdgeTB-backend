@@ -3,7 +3,6 @@ package handler
 import (
 	"EdgeTB-backend/dal"
 	"EdgeTB-backend/service"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -32,8 +31,8 @@ func Login(c *gin.Context) {
 	// 获取用户名、密码
 	var user UserInfo
 	err := c.ShouldBind(&user)
-	fmt.Println("Login传入的user信息", user)
-	if err != nil {
+	log.Printf("[Login] user=%+v", user)
+	if err != nil || user.Password == "" || user.Username == "" {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": "数据格式有误",
@@ -65,7 +64,7 @@ func Register(c *gin.Context) {
 	var user UserInfo
 	err := c.ShouldBind(&user)
 	log.Printf("[Register] user=%+v", user)
-	if err != nil {
+	if err != nil || user.Password == "" || user.Username == "" {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": "数据格式有误",
@@ -81,7 +80,8 @@ func Register(c *gin.Context) {
 		})
 	} else {
 		token, times, err := service.GenerateToken(user.Username, user.Password)
-		returnData := Data{token, times.String()}
+		str := times.String()
+		returnData := Data{token, str[0:10]}
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
