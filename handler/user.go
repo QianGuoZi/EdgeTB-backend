@@ -26,6 +26,43 @@ type Data struct {
 	ExpiredAt string `json:"expiredAt"`
 }
 
+// Register 用户注册
+func Register(c *gin.Context) {
+	var user UserInfo
+	err := c.ShouldBind(&user)
+	log.Printf("[Register] user=%+v", user)
+	if err != nil || user.Password == "" || user.Username == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "数据格式有误",
+		})
+		return
+	}
+
+	_, err1 := service.Register(user.Username, user.Password)
+	if err1 != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "注册失败",
+		})
+	} else {
+		token, times, err := service.GenerateToken(user.Username)
+		str := times.String()
+		returnData := Data{token, str[0:10]}
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "注册成功，自动登陆失败，请手动登陆",
+			})
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"message": "注册成功",
+			"data":    returnData,
+		})
+	}
+}
+
 // Login 用户登录
 func Login(c *gin.Context) {
 	// 获取用户名、密码
@@ -57,43 +94,6 @@ func Login(c *gin.Context) {
 		"data":    returnData,
 	})
 	return
-}
-
-// Register 用户注册
-func Register(c *gin.Context) {
-	var user UserInfo
-	err := c.ShouldBind(&user)
-	log.Printf("[Register] user=%+v", user)
-	if err != nil || user.Password == "" || user.Username == "" {
-		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"message": "数据格式有误",
-		})
-		return
-	}
-
-	_, err1 := service.Register(user.Username, user.Password)
-	if err1 != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"message": "注册失败",
-		})
-	} else {
-		token, times, err := service.GenerateToken(user.Username, user.Password)
-		str := times.String()
-		returnData := Data{token, str[0:10]}
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{
-				"success": false,
-				"message": "注册成功，自动登陆失败，请手动登陆",
-			})
-		}
-		c.JSON(http.StatusOK, gin.H{
-			"success": true,
-			"message": "注册成功",
-			"data":    returnData,
-		})
-	}
 }
 
 // GetUsername 测试用，解析token返回username

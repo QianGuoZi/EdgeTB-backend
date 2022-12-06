@@ -59,13 +59,15 @@ func Register(userName, password string) (id int64, err error) {
 func Login(userName, password string) (string, time.Time, error) {
 	result, err := dal.SearchUser(userName, password)
 	if err != nil {
-		return "error", time.Now(), errors.New("鉴权失败")
+		log.Printf("[Login] dal.SearchUser执行失败")
+		return "", time.Now(), errors.New("鉴权失败")
 	} else if result == false {
-		return "error", time.Now(), errors.New("用户名或密码错误")
+		return "", time.Now(), errors.New("用户名或密码错误")
 	}
-	token, times, err := GenerateToken(userName, password)
+	token, times, err := GenerateToken(userName)
 	if err != nil {
-		return "error", time.Now(), errors.New("生成token失败")
+		log.Printf("[Login] GenerateToken失败")
+		return "", time.Now(), errors.New("生成token失败")
 	}
 	return token, times, nil
 }

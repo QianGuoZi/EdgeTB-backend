@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	//https://liwh011.github.io/edgetb-openplatform-frontend/
+	//前端：https://liwh011.github.io/edgetb-openplatform-frontend/
 	gin.SetMode(gin.ReleaseMode)
 
 	//初始化数据库

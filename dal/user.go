@@ -12,8 +12,8 @@ func CheckUser(userName string) (User, error) {
 	user := User{}
 	DB.Model(&User{}).Where("user_name = ?", userName).First(&user)
 	if user.Id != 0 {
-		log.Printf("[CheckUser] 用户已存在")
-		return user, errors.New("用户已存在")
+		log.Printf("[CheckUser] 用户存在")
+		return user, errors.New("用户存在")
 	}
 	return user, nil
 }
@@ -37,8 +37,8 @@ func SearchUser(userName, password string) (bool, error) {
 		log.Printf("[SearchUser] 用户名错误")
 		return false, errors.New("用户名错误")
 	}
-	err2 := bcrypt.CompareHashAndPassword([]byte(user.Pwd), []byte(userName+password+user.Salt))
-	if err2 != nil {
+	err := bcrypt.CompareHashAndPassword([]byte(user.Pwd), []byte(userName+password+user.Salt))
+	if err != nil {
 		log.Printf("[SearchUser] 密码错误")
 		return false, errors.New("密码错误")
 	}

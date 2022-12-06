@@ -6,23 +6,21 @@ import (
 	"time"
 )
 
-var jwtSecret = []byte("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIiLCJleHAiOjE1MDAwLCJpc3MiOiJ0ZXN0In0.HE7fK0xOQwFEr4WDgRWj4teRPZ6i3GLwD5YCm6Pwu_c")
+var jwtSecret = []byte("eyJhbGciOiJIUzI1NiIsInR5cCI6IyJmb28iOiJiYXIiLCJleHAiOjE1MDAwLCJpc3MiOiJ0ZXN0In0.HE7fK0xOQwFEr4WDgRWj4teRPZ6i3GLwD5YCm6Pwu_c")
 
 type Claims struct {
 	Username string `json:"username"`
-	Password string `json:"password"`
 	jwt.StandardClaims
 }
 
-// GenerateToken 根据用户的用户名和密码产生token
-func GenerateToken(username, password string) (string, time.Time, error) {
+// GenerateToken 根据用户的用户名产生token
+func GenerateToken(username string) (string, time.Time, error) {
 	//设置token有效时间
 	nowTime := time.Now()
 	expireTime := nowTime.Add(48 * time.Hour)
 
 	claims := Claims{
 		Username: username,
-		Password: password,
 		StandardClaims: jwt.StandardClaims{
 			// 过期时间
 			ExpiresAt: expireTime.Unix(),
