@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+//密钥
 var jwtSecret = []byte("eyJhbGciOiJIUzI1NiIsInR5cCI6IyJmb28iOiJiYXIiLCJleHAiOjE1MDAwLCJpc3MiOiJ0ZXN0In0.HE7fK0xOQwFEr4WDgRWj4teRPZ6i3GLwD5YCm6Pwu_c")
 
 type Claims struct {

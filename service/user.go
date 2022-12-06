@@ -25,7 +25,7 @@ func randSalt() string {
 
 // Register 用userName和password注册用户
 func Register(userName, password string) (id int64, err error) {
-	//查看用户是否存在
+	//检查用户是否存在
 	user, err := dal.CheckUser(userName)
 	if err != nil {
 		return 0, errors.New("该用户已存在")

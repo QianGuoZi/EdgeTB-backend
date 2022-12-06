@@ -22,7 +22,7 @@ func CheckUser(userName string) (User, error) {
 func AddUser(user User) (int64, error) {
 	result := DB.Model(&User{}).Create(&user)
 	if result.Error != nil {
-		log.Printf("[Register] 数据库创建用户记录失败")
+		log.Printf("[Register] 数据库创建新用户记录失败")
 		return 0, result.Error
 	}
 	return user.Id, nil

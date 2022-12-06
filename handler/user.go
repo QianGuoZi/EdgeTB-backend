@@ -76,8 +76,7 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
-	// 校验用户名和密码是否正确
-	// 生成Token
+	// 校验用户名和密码是否正确并生成token
 	token, expiredAt, err1 := service.Login(user.Username, user.Password)
 	str := expiredAt.String()
 	returnData := Data{token, str[0:10]}
