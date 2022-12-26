@@ -22,10 +22,10 @@ func initRouter(r *gin.Engine) {
 
 	//数据集 apis
 	{
-		//apiRouter.GET("/public-datasets", handler.AllPublicDatasets)
+		apiRouter.GET("/dataset/public", handler.AllPublicDatasets)
 		//apiRouter.GET("/dataset/public/:id", handler.AllPublicDatasets)
 		//apiRouter.GET("/dataset/my", handler.AllPublicDatasets)
-		//apiRouter.POST("/dataset/my", handler.AllPublicDatasets)
+		apiRouter.POST("/dataset/my", handler.AddDataset)
 		//apiRouter.GET("/dataset/my/:id", handler.AllPublicDatasets)
 		//apiRouter.PUT("/dataset/my/:id", handler.AllPublicDatasets)
 		//apiRouter.DELETE("/dataset/my/:id", handler.AllPublicDatasets)

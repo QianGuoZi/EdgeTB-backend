@@ -91,3 +91,14 @@ func UpdateUser(user *User) error {
 	}
 	return nil
 }
+
+// GetUserId 获取用户id
+func GetUserId(name string) (int64, error) {
+	user := User{}
+	DB.Model(&User{}).Where("user_name = ?", name).First(&user)
+	if user.Id == 0 {
+		return 0, errors.New("无法找到该用户")
+	}
+	log.Printf("[GetUserId] userId=%+v", user.Id)
+	return user.Id, nil
+}

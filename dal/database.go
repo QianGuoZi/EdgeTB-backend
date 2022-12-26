@@ -19,6 +19,6 @@ func InitDB() {
 	if err != nil {
 		panic(err)
 	}
-	err = DB.AutoMigrate(&User{}, &Dataset{}, &DatasetFile{})
+	err = DB.AutoMigrate(&User{}, &Dataset{})
 	log.Println(err)
 }

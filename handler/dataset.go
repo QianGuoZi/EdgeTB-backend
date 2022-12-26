@@ -10,13 +10,6 @@ import (
 	"time"
 )
 
-type PublicCheck struct {
-	Keyword  string `form:"keyword" json:"keyword"`   //关键词搜索
-	Type     string `form:"type" json:"type"`         //类型筛选
-	PageSize int    `form:"pageSize" json:"pageSize"` //页大小
-	PageNo   int    `form:"pageNo" json:"pageNo"`     //页码
-}
-
 type PublicListReturn struct {
 	Total    int                     `form:"total" json:"total"`       //数据集总数
 	PageNo   int                     `form:"pageNo" json:"pageNo"`     //页码
@@ -27,45 +20,49 @@ type PublicListReturn struct {
 type NewDataset struct {
 	SetName     string `form:"setName" json:"setName"`         //数据集名称
 	Description string `form:"description" json:"description"` //数据集描述
+	Type        string `form:"type" json:"type"`               //数据集类型
 	Source      string `form:"source" json:"source"`           //数据集来源
-	FileId      string `form:"fileId" json:"fileId"`           //已上传的文件标识
+	Url         string `form:"url" json:"url"`                 //文件url
+	FileName    string `form:"fileName" json:"fileName"`       //文件名称
+	Size        int    `form:"size" json:"size"`               //文件大小
 }
 
 type DatasetFileReturn struct {
-	FileId string `form:"fileId" json:"fileId"`
+	Url      string `form:"url" json:"url"`           //文件url
+	FileName string `form:"fileName" json:"fileName"` //文件名称
+	Size     int    `form:"size" json:"size"`         //文件大小
 }
 
-// AllPublicDatasets 公共数据集列表
-//func AllPublicDatasets(c *gin.Context) {
-//	//返回所有公共数据集（切页）
-//	var publicCheck PublicCheck
-//	err := c.ShouldBind(&publicCheck)
-//	log.Printf("[AllPublicDatasets] publicCheck=%+v", publicCheck)
-//	if err != nil {
-//		c.JSON(http.StatusOK, gin.H{
-//			"success": false,
-//			"message": "查询条件为空",
-//		})
-//		return
-//	}
-//
-//	datasets, total, err1 := service.AllPublic(publicCheck)
-//	if err1 != nil {
-//		c.JSON(http.StatusOK, gin.H{
-//			"success": false,
-//			"message": "查询公共数据集失败",
-//		})
-//		return
-//	}
-//	returnData := PublicListReturn{total, publicCheck.PageNo, publicCheck.PageSize, datasets}
-//
-//	c.JSON(http.StatusOK, gin.H{
-//		"success": true,
-//		"message": "登陆成功",
-//		"data":    returnData,
-//	})
-//	return
-//}
+type AddDatasetReturn struct {
+	FileId int `form:"id" json:"id"` //数据集id
+}
+
+//AllPublicDatasets 公共数据集列表
+func AllPublicDatasets(c *gin.Context) {
+	//返回所有公共数据集（切页）
+	var publicCheck service.PublicCheck
+	err := c.ShouldBind(&publicCheck)
+	if err != nil || publicCheck.PageSize == 0 {
+		publicCheck.PageSize = 20
+	}
+	log.Printf("[AllPublicDatasets] publicCheck=%+v", publicCheck)
+	datasets, total, err1 := service.AllPublic(publicCheck)
+	if err1 != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "查询公共数据集失败",
+		})
+		return
+	}
+	returnData := PublicListReturn{total, publicCheck.PageNo, publicCheck.PageSize, datasets}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "获取公共数据集列表成功",
+		"data":    returnData,
+	})
+	return
+}
 
 // PublicDatasetsDetail 公共数据集详情
 func PublicDatasetsDetail() {
@@ -97,18 +94,6 @@ func AlterDataset() {
 func UploadDataset(c *gin.Context) {
 	//上传文件
 	//上传到本地后添加新文件信息
-
-	//测试字段
-	//var datasetFileReturn DatasetFileReturn
-	//err := c.ShouldBind(&datasetFileReturn)
-	//log.Printf("[UploadDataset] datasetFileReturn=%+v", datasetFileReturn)
-	//if err != nil {
-	//	c.JSON(http.StatusOK, gin.H{
-	//		"success": false,
-	//		"message": "datasetFileReturn为空",
-	//	})
-	//	return
-	//}
 	//获取用户名称
 	username, err := service.GetUsername(c)
 	if err != nil {
@@ -144,14 +129,13 @@ func UploadDataset(c *gin.Context) {
 	log.Printf("[UploadDataset] uploadFileType=%+v", uploadFileType)
 	//判断后缀是否合法
 	checkResult := CheckFile(uploadFileType)
+	log.Printf("[UploadDataset] checkResult=%+v", checkResult)
 	if checkResult != true {
-		if errFile != nil {
-			c.JSON(http.StatusOK, gin.H{
-				"success": false,
-				"message": "文件类型有误",
-			})
-			return
-		}
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "文件类型有误",
+		})
+		return
 	}
 	//文件保存目录
 	saveDir = "./DatasetFile"
@@ -171,20 +155,20 @@ func UploadDataset(c *gin.Context) {
 		return
 	}
 	//没有错误的情况下
-	//传入文件名、路径、大小等文件信息，返回文件id
-	fileId, err1 := service.UploadDatasetFile(savePath, uploadFileType)
+	//返回文件path,size和fileName
+	filePath, fileName, size, err1 := service.UploadDatasetFile(savePath, uploadFileType)
 	if err1 != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
-			"message": "文件上传成功，但文件信息上传失败",
+			"message": "文件上传成功，但文件信息获取失败",
 		})
 		return
 	}
-	returnData := DatasetFileReturn{strconv.Itoa(fileId)}
+	returnData := DatasetFileReturn{filePath, fileName, size}
 	log.Printf("[UploadDataset] returnData=%+v", returnData)
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"message": "上传成功",
+		"message": "文件上传成功",
 		"data":    returnData,
 	})
 	return
@@ -203,11 +187,24 @@ func CheckFile(uploadFileType string) bool {
 
 // AddDataset 创建自定义数据集
 func AddDataset(c *gin.Context) {
-	//通过用户id，文件id和数据集信息创建新数据集
-	var newDataset NewDataset
-	err := c.ShouldBind(&newDataset)
-	log.Printf("[AddDataset] newDataset=%+v", newDataset)
+	//通过用户id，文件信息和数据集信息创建新数据集
+
+	//获取用户名称
+	username, err := service.GetUsername(c)
 	if err != nil {
+		log.Printf("[GetUserInfo] failed err=%+v", err)
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "token有误",
+		})
+		return
+	}
+
+	//添加数据集信息
+	var newDataset NewDataset
+	err1 := c.ShouldBind(&newDataset)
+	log.Printf("[AddDataset] newDataset=%+v", newDataset)
+	if err1 != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": "新增数据集数据格式有误",
@@ -215,6 +212,21 @@ func AddDataset(c *gin.Context) {
 		return
 	}
 	if newDataset.Source == "upload" {
-		//datasets, total, err1 := service.AddDataset("数据集", "")
+		datasetId, err2 := service.AddDatasetByUpload(newDataset.SetName, newDataset.Description, newDataset.Type, newDataset.Source,
+			newDataset.Url, newDataset.FileName, newDataset.Size, username)
+		if err2 != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "新增数据集失败，请重试",
+			})
+			return
+		}
+		returnData := AddDatasetReturn{datasetId}
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"message": "新增数据集成功",
+			"data":    returnData,
+		})
+		return
 	}
 }

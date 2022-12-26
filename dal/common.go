@@ -15,23 +15,15 @@ type User struct {
 }
 
 type Dataset struct {
-	Id          int64       `json:"id,omitempty" gorm:"primaryKey"`
-	SetName     string      `json:"set_name,omitempty" gorm:"type:varchar(100)"`
-	Type        string      `json:"type,omitempty" gorm:"type:varchar(100)"`
-	Size        int64       `json:"size,omitempty" gorm:"type:int"`
-	Description string      `json:"description,omitempty" gorm:"type:varchar(100)"`
-	State       int8        `json:"state,omitempty" gorm:"type:int"`
-	UserId      int64       `json:"user_id,omitempty" gorm:"type:foreignKey"`
-	CreatedAt   time.Time   `json:"-" gorm:"index:,sort:desc"`
-	DatasetFile DatasetFile `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-}
-
-type DatasetFile struct {
-	Id        int64     `json:"id,omitempty" gorm:"primaryKey"`
-	FileName  string    `json:"file_name,omitempty" gorm:"type:varchar(100)"`
-	Path      string    `json:"path,omitempty" gorm:"type:varchar(100)"`
-	Type      string    `json:"type,omitempty" gorm:"type:varchar(100)"`
-	Size      int64     `json:"size,omitempty" gorm:"type:int"`
-	DatasetId int64     `json:"dataset_id,omitempty" gorm:"type:foreignKey"`
-	CreatedAt time.Time `json:"-" gorm:"index:,sort:desc"`
+	Id          int64     `json:"id,omitempty" gorm:"primaryKey"`
+	DatasetName string    `json:"dataset_name,omitempty" gorm:"type:varchar(100)"`
+	Description string    `json:"description,omitempty" gorm:"type:varchar(100)"`
+	Type        string    `json:"type,omitempty" gorm:"type:varchar(100)"`
+	State       int8      `json:"state,omitempty" gorm:"type:int"`
+	Source      string    `json:"source,omitempty" gorm:"type:varchar(100)"`
+	Url         string    `json:"url,omitempty" gorm:"type:varchar(100)"`
+	FileName    string    `json:"file_name,omitempty" gorm:"type:varchar(100)"`
+	Size        int64     `json:"size,omitempty" gorm:"type:int"`
+	UserId      int64     `json:"user_id,omitempty" gorm:"type:foreignKey"`
+	CreatedAt   time.Time `json:"-" gorm:"index:,sort:desc"`
 }
