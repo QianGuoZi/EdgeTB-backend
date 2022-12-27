@@ -10,9 +10,9 @@ func initRouter(r *gin.Engine) {
 
 	//用户 apis
 	{
-		apiRouter.POST("/login", handler.Login)
-		apiRouter.POST("/register", handler.Register)
-		apiRouter.POST("/logout", handler.Logout)
+		apiRouter.POST("/user/login", handler.Login)
+		apiRouter.POST("/user/register", handler.Register)
+		apiRouter.POST("/user/logout", handler.Logout)
 
 		apiRouter.POST("/getUsername", handler.GetUsername)
 		apiRouter.GET("/getUserInfo", handler.GetUserInfo)
@@ -23,12 +23,12 @@ func initRouter(r *gin.Engine) {
 	//数据集 apis
 	{
 		apiRouter.GET("/dataset/public", handler.AllPublicDatasets)
-		//apiRouter.GET("/dataset/public/:id", handler.AllPublicDatasets)
-		//apiRouter.GET("/dataset/my", handler.AllPublicDatasets)
+		apiRouter.GET("/dataset/public/:id", handler.PublicDatasetsDetail)
+		apiRouter.GET("/dataset/my", handler.AllPrivateDatasets)
 		apiRouter.POST("/dataset/my", handler.AddDataset)
-		//apiRouter.GET("/dataset/my/:id", handler.AllPublicDatasets)
-		//apiRouter.PUT("/dataset/my/:id", handler.AllPublicDatasets)
-		//apiRouter.DELETE("/dataset/my/:id", handler.AllPublicDatasets)
+		apiRouter.GET("/dataset/my/:id", handler.PrivateDatasetsDetail)
+		apiRouter.PUT("/dataset/my/:id", handler.UpdateDataset)
+		apiRouter.DELETE("/dataset/my/:id", handler.DeletePrivateDataset)
 		apiRouter.POST("/dataset/my/upload", handler.UploadDataset)
 	}
 }

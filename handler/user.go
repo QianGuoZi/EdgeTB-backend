@@ -32,7 +32,7 @@ func Register(c *gin.Context) {
 	err := c.ShouldBind(&user)
 	log.Printf("[Register] user=%+v", user)
 	if err != nil || user.Password == "" || user.Username == "" {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "数据格式有误",
 		})
@@ -41,7 +41,7 @@ func Register(c *gin.Context) {
 
 	_, err1 := service.Register(user.Username, user.Password)
 	if err1 != nil {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "注册失败",
 		})
@@ -70,7 +70,7 @@ func Login(c *gin.Context) {
 	err := c.ShouldBind(&user)
 	log.Printf("[Login] user=%+v", user)
 	if err != nil || user.Password == "" || user.Username == "" {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "数据格式有误",
 		})
@@ -81,7 +81,7 @@ func Login(c *gin.Context) {
 	str := expiredAt.String()
 	returnData := Data{token, str[0:10]}
 	if err1 != nil {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "用户名或密码错误",
 		})

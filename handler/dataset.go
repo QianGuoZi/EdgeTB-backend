@@ -37,6 +37,11 @@ type AddDatasetReturn struct {
 	FileId int `form:"id" json:"id"` //数据集id
 }
 
+type DatasetDataUpdate struct {
+	SetName     string `form:"setName" json:"setName"`         //数据集名称
+	Description string `form:"description" json:"description"` //数据集描述
+}
+
 //AllPublicDatasets 公共数据集列表
 func AllPublicDatasets(c *gin.Context) {
 	//返回所有公共数据集（切页）
@@ -46,7 +51,7 @@ func AllPublicDatasets(c *gin.Context) {
 		publicCheck.PageSize = 20
 	}
 	log.Printf("[AllPublicDatasets] publicCheck=%+v", publicCheck)
-	datasets, total, err1 := service.AllPublic(publicCheck)
+	datasets, total, err1 := service.AllPublicDatasets(publicCheck)
 	if err1 != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -65,29 +70,178 @@ func AllPublicDatasets(c *gin.Context) {
 }
 
 // PublicDatasetsDetail 公共数据集详情
-func PublicDatasetsDetail() {
+func PublicDatasetsDetail(c *gin.Context) {
 	//通过数据集id返回内容
-	//id := c.Param("id")
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": "id有误，公共数据集详情获取失败",
+		})
+		return
+	}
+	log.Printf("[PublicDatasetsDetail] id=%+v", id)
+	details, err1 := service.GetPublicDetails(id)
+	if err1 != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": "公共数据集详情获取失败，请重试",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "公共数据集详情获取成功",
+		"data":    details,
+	})
+	return
 }
 
 // AllPrivateDatasets 自定义数据集列表
-func AllPrivateDatasets() {
+func AllPrivateDatasets(c *gin.Context) {
 	//通过用户id获取自定义数据集列表
+	username, err := service.GetUsername(c)
+	if err != nil {
+		log.Printf("[GetUserInfo] failed err=%+v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "token有误",
+		})
+		return
+	}
+	//返回datasetList
+	datasets, err1 := service.AllPrivateDatasets(username)
+	if err1 != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "查询自定义数据集失败",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "获取自定义数据集列表成功",
+		"data":    datasets,
+	})
 }
 
 // PrivateDatasetsDetail 自定义数据集详情
-func PrivateDatasetsDetail() {
+func PrivateDatasetsDetail(c *gin.Context) {
 	//通过数据集id返回内容
+	username, err := service.GetUsername(c)
+	if err != nil {
+		log.Printf("[GetUserInfo] failed err=%+v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "token有误",
+		})
+		return
+	}
+	id, err1 := strconv.Atoi(c.Param("id"))
+	if err1 != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": "id有误，自定义数据集详情获取失败",
+		})
+		return
+	}
+	log.Printf("[PrivateDatasetsDetail] id=%+v", id)
+	details, err2 := service.GetPrivateDetails(username, id)
+	if err2 != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": "自定义数据集详情获取失败，请重试",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "自定义数据集详情获取成功",
+		"data":    details,
+	})
+	return
 }
 
 // DeletePrivateDataset 删除自定义数据集
-func DeletePrivateDataset() {
+func DeletePrivateDataset(c *gin.Context) {
+	//获取username
+	username, err1 := service.GetUsername(c)
+	if err1 != nil {
+		log.Printf("[GetUserInfo] failed err=%+v", err1)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "token有误",
+		})
+		return
+	}
 	//拿到数据集id，删除对应内容
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": "id有误，自定义数据集详情获取失败",
+		})
+		return
+	}
+	result := service.DeleteDataset(username, id)
+	if result != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "数据集删除失败",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "数据集删除成功",
+	})
+	return
 }
 
-// AlterDataset 修改数据集
-func AlterDataset() {
+// UpdateDataset 修改数据集
+func UpdateDataset(c *gin.Context) {
 	//通过数据集id修改内容
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": "id有误，自定义数据集详情获取失败",
+		})
+		return
+	}
+	//获取username
+	username, err1 := service.GetUsername(c)
+	if err1 != nil {
+		log.Printf("[GetUserInfo] failed err=%+v", err1)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "token有误",
+		})
+		return
+	}
+	var datasetDataUpdate DatasetDataUpdate
+	err = c.ShouldBind(&datasetDataUpdate)
+	log.Printf("[UpdateDataset] DatasetDataUpdate=%+v", datasetDataUpdate)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "数据格式有误",
+		})
+		return
+	}
+	result := service.UpdateDataset(username, id, datasetDataUpdate.SetName, datasetDataUpdate.Description)
+	if result != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "数据集信息修改失败",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "数据集信息修改成功",
+	})
+	return
 }
 
 // UploadDataset 上传数据集
@@ -98,7 +252,7 @@ func UploadDataset(c *gin.Context) {
 	username, err := service.GetUsername(c)
 	if err != nil {
 		log.Printf("[GetUserInfo] failed err=%+v", err)
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "token有误",
 		})
@@ -116,7 +270,7 @@ func UploadDataset(c *gin.Context) {
 	file, errFile := c.FormFile("file")
 	//处理获取文件错误
 	if errFile != nil {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "请选择文件",
 		})
@@ -131,7 +285,7 @@ func UploadDataset(c *gin.Context) {
 	checkResult := CheckFile(uploadFileType)
 	log.Printf("[UploadDataset] checkResult=%+v", checkResult)
 	if checkResult != true {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "文件类型有误",
 		})
@@ -148,7 +302,7 @@ func UploadDataset(c *gin.Context) {
 	log.Printf("[UploadDataset] savePath=%+v", savePath)
 	err = c.SaveUploadedFile(file, savePath)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "文件上传失败",
 		})
@@ -156,7 +310,7 @@ func UploadDataset(c *gin.Context) {
 	}
 	//没有错误的情况下
 	//返回文件path,size和fileName
-	filePath, fileName, size, err1 := service.UploadDatasetFile(savePath, uploadFileType)
+	filePath, fileName, size, err1 := service.UploadDatasetFile(savePath)
 	if err1 != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -193,7 +347,7 @@ func AddDataset(c *gin.Context) {
 	username, err := service.GetUsername(c)
 	if err != nil {
 		log.Printf("[GetUserInfo] failed err=%+v", err)
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "token有误",
 		})
@@ -205,7 +359,7 @@ func AddDataset(c *gin.Context) {
 	err1 := c.ShouldBind(&newDataset)
 	log.Printf("[AddDataset] newDataset=%+v", newDataset)
 	if err1 != nil {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "新增数据集数据格式有误",
 		})
