@@ -81,7 +81,7 @@ func PublicDatasetsDetail(c *gin.Context) {
 		return
 	}
 	log.Printf("[PublicDatasetsDetail] id=%+v", id)
-	details, err1 := service.GetPublicDetails(id)
+	details, err1 := service.GetPublicDatasetDetails(id)
 	if err1 != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"success": false,
@@ -146,7 +146,7 @@ func PrivateDatasetsDetail(c *gin.Context) {
 		return
 	}
 	log.Printf("[PrivateDatasetsDetail] id=%+v", id)
-	details, err2 := service.GetPrivateDetails(username, id)
+	details, err2 := service.GetPrivateDatasetDetails(username, id)
 	if err2 != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"success": false,

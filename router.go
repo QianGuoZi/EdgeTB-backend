@@ -31,4 +31,15 @@ func initRouter(r *gin.Engine) {
 		apiRouter.DELETE("/dataset/my/:id", handler.DeletePrivateDataset)
 		apiRouter.POST("/dataset/my/upload", handler.UploadDataset)
 	}
+
+	//角色 apis
+	{
+		apiRouter.POST("/role", handler.AddRole)
+	}
+
+	//平台镜像 apis
+	{
+		apiRouter.GET("/image", handler.GetPlatformImageList)
+		apiRouter.POST("/image", handler.AddPlatformImage)
+	}
 }

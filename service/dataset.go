@@ -116,12 +116,12 @@ func AllPublicDatasets(publicCheck PublicCheck) ([]PublicDataset, int, error) {
 	return publicDataset, datasetTotal, nil
 }
 
-// GetPublicDetails 获取公共数据集详情
-func GetPublicDetails(datasetId int) (PublicDetails, error) {
+// GetPublicDatasetDetails 获取公共数据集详情
+func GetPublicDatasetDetails(datasetId int) (PublicDetails, error) {
 	publicDetails := PublicDetails{}
 	details, err := dal.GetDatasetDetail(datasetId)
 	if err != nil {
-		log.Printf("[GetPublicDetails] 服务获取公共数据集详情失败")
+		log.Printf("[GetPublicDatasetDetails] 服务获取公共数据集详情失败")
 		return publicDetails, errors.New("服务获取公共数据集详情失败")
 	}
 	publicDetails.Id = details.Id
@@ -129,7 +129,7 @@ func GetPublicDetails(datasetId int) (PublicDetails, error) {
 	publicDetails.Description = details.Description
 	publicDetails.Type = details.Type
 	publicDetails.Size = int(details.Size)
-	log.Printf("[GetPublicDetails] 服务获取公共数据集详情为%+v", publicDetails)
+	log.Printf("[GetPublicDatasetDetails] 服务获取公共数据集详情为%+v", publicDetails)
 	return publicDetails, nil
 }
 
@@ -161,25 +161,25 @@ func AllPrivateDatasets(userName string) ([]PrivateDataset, error) {
 	return privateDataset, nil
 }
 
-// GetPrivateDetails 获取自定义数据集详情
-func GetPrivateDetails(userName string, datasetId int) (PrivateDetails, error) {
+// GetPrivateDatasetDetails 获取自定义数据集详情
+func GetPrivateDatasetDetails(userName string, datasetId int) (PrivateDetails, error) {
 	privateDetails := PrivateDetails{}
 	//通过username获取id
 	userId, err := dal.GetUserId(userName)
 	if err != nil {
-		log.Printf("[GetPrivateDetails] 服务获取用户id失败")
+		log.Printf("[GetPrivateDatasetDetails] 服务获取用户id失败")
 		return privateDetails, errors.New("服务获取用户id失败")
 	}
 	//检查用户与数据集是否匹配
 	err = dal.CheckUserDataset(int(userId), datasetId)
 	if err != nil {
-		log.Printf("[GetPrivateDetails] 服务用户与数据集id不匹配")
+		log.Printf("[GetPrivateDatasetDetails] 服务用户与数据集id不匹配")
 		return privateDetails, errors.New("服务用户与数据集id不匹配")
 	}
 
 	details, err1 := dal.GetDatasetDetail(datasetId)
 	if err1 != nil {
-		log.Printf("[GetPrivateDetails] 服务获取自定义数据集详情失败")
+		log.Printf("[GetPrivateDatasetDetails] 服务获取自定义数据集详情失败")
 		return privateDetails, errors.New("服务获取自定义数据集详情失败")
 	}
 	privateDetails.Id = details.Id
@@ -189,7 +189,7 @@ func GetPrivateDetails(userName string, datasetId int) (PrivateDetails, error) {
 	privateDetails.Size = int(details.Size)
 	timeStr := details.CreatedAt.String()
 	privateDetails.CreatedAt = timeStr[0:19]
-	log.Printf("[GetPrivateDetails] 服务获取自定义数据集详情为%+v", privateDetails)
+	log.Printf("[GetPrivateDatasetDetails] 服务获取自定义数据集详情为%+v", privateDetails)
 	return privateDetails, nil
 }
 
