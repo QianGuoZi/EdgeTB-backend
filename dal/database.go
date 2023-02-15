@@ -19,6 +19,6 @@ func InitDB() {
 	if err != nil {
 		panic(err)
 	}
-	err = DB.AutoMigrate(&User{}, &Dataset{}, &Role{}, &Code{}, &PyDev{}, &Image{}, &PlatformImage{})
+	err = DB.AutoMigrate(&User{}, &Dataset{}, &Role{}, &Code{}, &PyDev{}, &Image{}, &PlatformImage{}, &OutputItem{})
 	log.Println(err)
 }

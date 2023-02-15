@@ -36,8 +36,6 @@ type Role struct {
 	PyVersion   string    `json:"py_version,omitempty" gorm:"type:varchar(100)"`
 	WorkDir     string    `json:"work_dir,omitempty" gorm:"type:varchar(100)"`
 	RunCommand  string    `json:"run_command,omitempty" gorm:"type:varchar(100)"`
-	OutputName  string    `json:"output_name,omitempty" gorm:"type:varchar(100)"`
-	OutputPath  string    `json:"output_path,omitempty" gorm:"type:varchar(100)"`
 	CodeId      int64     `json:"code_id,omitempty" gorm:"type:int"`
 	PyDevId     int64     `json:"py_dev_id,omitempty" gorm:"type:int"`
 	ImageId     int64     `json:"image_id,omitempty" gorm:"type:int"`
