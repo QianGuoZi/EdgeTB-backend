@@ -35,6 +35,8 @@ func initRouter(r *gin.Engine) {
 	//角色 apis
 	{
 		apiRouter.POST("/role", handler.AddRole)
+		apiRouter.GET("/role", handler.AllRole)
+		apiRouter.GET("/role/:name", handler.RoleDetail)
 	}
 
 	//平台镜像 apis

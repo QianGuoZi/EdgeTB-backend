@@ -39,6 +39,7 @@ type Role struct {
 	CodeId      int64     `json:"code_id,omitempty" gorm:"type:int"`
 	PyDevId     int64     `json:"py_dev_id,omitempty" gorm:"type:int"`
 	ImageId     int64     `json:"image_id,omitempty" gorm:"type:int"`
+	ImageName   string    `json:"image_name,omitempty" gorm:"type:varchar(100)"`
 	UserId      int64     `json:"user_id,omitempty" gorm:"type:foreignKey"`
 	CreatedAt   time.Time `json:"-" gorm:"index:,sort:desc"`
 }
