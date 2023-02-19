@@ -3,11 +3,27 @@ package service
 import (
 	"EdgeTB-backend/dal"
 	"errors"
+	"fmt"
 	"log"
+	"os"
 )
 
 type RoleStruct struct {
 	Name        string       `json:"name"`                  // 角色名称，唯一
+	Description *string      `json:"description,omitempty"` // 描述
+	PyVersion   string       `json:"pyVersion"`             // python版本
+	CodeSource  string       `json:"codeSource"`            // 代码来源
+	Code        Code         `json:"code"`
+	WorkDir     *string      `json:"workDir,omitempty"` // 工作目录，默认为代码根目录
+	RunCommand  string       `json:"runCommand"`        // 启动指令
+	PyDepSource string       `json:"pyDepSource"`       // py依赖来源
+	PyDep       PyDep        `json:"pyDep"`
+	ImageSource string       `json:"imageSource"` // 镜像来源
+	Image       Image        `json:"image"`
+	OutputItems []OutputItem `json:"outputItems"` // 输出项
+}
+
+type RoleUpdateRequest struct {
 	Description *string      `json:"description,omitempty"` // 描述
 	PyVersion   string       `json:"pyVersion"`             // python版本
 	CodeSource  string       `json:"codeSource"`            // 代码来源
@@ -61,6 +77,18 @@ type RoleListResponse struct {
 	ImageName   string `json:"imageName"`             // 镜像名称
 }
 
+// UploadRoleCodeFile 传入文件名、路径，获取类型、大小，返回文件id
+func UploadRoleCodeFile(filePath string) (string, string, int, error) {
+	fi, err := os.Stat(filePath)
+	if err != nil {
+		log.Printf("[UploadRoleFile] 服务获取上传文件信息失败")
+		return "", "", 0, errors.New("服务获取上传文件信息失败")
+	}
+	fmt.Println("name:", fi.Name())
+	fmt.Println("size:", fi.Size())
+	return filePath, fi.Name(), int(fi.Size()), nil
+}
+
 // AddRole 添加角色
 func AddRole(addRoleRequest RoleStruct, username string) error {
 	//通过username获取id
@@ -69,41 +97,60 @@ func AddRole(addRoleRequest RoleStruct, username string) error {
 		log.Printf("[AddRole] 服务获取用户id失败")
 		return errors.New("服务获取用户id失败")
 	}
-	check := dal.CheckRoleExist(addRoleRequest.Name, addRoleRequest.Image.Name, addRoleRequest.ImageSource)
+	check := dal.CheckRoleExist(addRoleRequest.Name)
 	if check != nil {
-		log.Printf("[AddRole] 服务添加角色失败，角色重复或镜像重复")
-		return errors.New("角色重复或镜像重复")
+		log.Printf("[AddRole] 服务添加角色失败，角色重复")
+		return errors.New("角色重复")
+	}
+	//role
+	roleId, err1 := AddRoleInfo(addRoleRequest, userId)
+	if err1 != nil {
+		return errors.New("添加角色信息失败")
 	}
 	//code
-	codeId, err1 := AddRoleCode(addRoleRequest)
-	if err1 != nil {
+	err = AddRoleCode(addRoleRequest, roleId)
+	if err != nil {
 		return errors.New("添加角色代码信息失败")
 	}
 	//pyDep
-	pyDepId, err2 := AddRolePyDep(addRoleRequest)
-	if err2 != nil {
+	err = AddRolePyDep(addRoleRequest, roleId)
+	if err != nil {
 		return errors.New("添加角色py依赖信息失败")
 	}
 	//images
-	imageId, err3 := AddRoleImage(addRoleRequest)
-	if err3 != nil {
+	err = AddRoleImage(addRoleRequest, roleId)
+	if err != nil {
 		return errors.New("添加角色image依赖信息失败")
 	}
-	//role
-	roleId, err4 := AddRoleInfo(addRoleRequest, codeId, pyDepId, imageId, userId)
-	if err4 != nil {
-		return errors.New("添加角色信息失败")
-	}
 	//outputItem
-	err5 := AddRoleOutputItem(addRoleRequest.OutputItems, roleId)
-	if err5 != nil {
+	err = AddRoleOutputItem(addRoleRequest.OutputItems, roleId)
+	if err != nil {
 		return errors.New("添加角色输出信息失败")
 	}
 	return nil
 }
 
+// AddRoleInfo 添加角色信息部分
+func AddRoleInfo(addRoleRequest RoleStruct, userId int64) (int64, error) {
+	var role dal.Role
+	role.RoleName = addRoleRequest.Name
+	role.Description = *addRoleRequest.Description
+	role.PyVersion = addRoleRequest.PyVersion
+	role.WorkDir = *addRoleRequest.WorkDir
+	role.RunCommand = addRoleRequest.RunCommand
+	role.ImageName = addRoleRequest.Image.Name
+	role.UserId = userId
+	roleId, err := dal.AddRole(role)
+	if err != nil {
+		log.Printf("[AddRole] 服务添加角色信息失败")
+		return 0, errors.New("添加角色信息失败")
+	}
+	log.Printf("[AddRole] 服务添加角色roleId:%+v", roleId)
+	return roleId, nil
+}
+
 // AddRoleCode 添加角色Code部分
-func AddRoleCode(addRoleRequest RoleStruct) (int64, error) {
+func AddRoleCode(addRoleRequest RoleStruct, roleId int64) error {
 	//code:upload功能
 	if addRoleRequest.CodeSource == "upload" {
 		//拿到文件信息，传入数据库
@@ -114,75 +161,56 @@ func AddRoleCode(addRoleRequest RoleStruct) (int64, error) {
 		code.CodeFileName = file.FileName
 		code.CodeFileSize = file.Size
 		code.CodeFileUrl = file.URL
+		code.RoleId = roleId
 		codeId, err := dal.AddRoleCode(code)
 		if err != nil {
 			log.Printf("[AddRole] 服务添加角色代码信息失败")
-			return 0, errors.New("添加角色代码信息失败")
+			return errors.New("添加角色代码信息失败")
 		}
 		log.Printf("[AddRole] 服务添加角色codeId:%+v", codeId)
-		return codeId, nil
+		return nil
 	}
-	return 0, nil
+	return nil
 }
 
 // AddRolePyDep 添加角色pyDep部分
-func AddRolePyDep(addRoleRequest RoleStruct) (int64, error) {
+func AddRolePyDep(addRoleRequest RoleStruct, roleId int64) error {
 	//pyDep:upload功能
-	if addRoleRequest.PyDepSource == "upload" {
+	if addRoleRequest.PyDepSource == "upload" || addRoleRequest.PyDepSource == "manual" {
 		rolePyDep := addRoleRequest.PyDep
-		var pyDep dal.PyDev
-		pyDep.PyDevSource = addRoleRequest.PyDepSource
-		pyDep.PyDevPackages = *rolePyDep.Packages
+		var pyDep dal.PyDep
+		pyDep.PyDepSource = addRoleRequest.PyDepSource
+		pyDep.PyDepPackages = *rolePyDep.Packages
+		pyDep.RoleId = roleId
 		pyDepId, err := dal.AddRolePyDep(pyDep)
 		if err != nil {
 			log.Printf("[AddRole] 服务添加角色py依赖信息失败")
-			return 0, errors.New("添加角色py依赖信息失败")
+			return errors.New("添加角色py依赖信息失败")
 		}
 		log.Printf("[AddRole] 服务添加角色pyDepId:%+v", pyDepId)
-		return pyDepId, nil
+		return nil
 	}
-	return 0, nil
+	return nil
 }
 
 // AddRoleImage 添加角色image部分
-func AddRoleImage(addRoleRequest RoleStruct) (int64, error) {
+func AddRoleImage(addRoleRequest RoleStruct, roleId int64) error {
 	//image:platform功能
 	if addRoleRequest.ImageSource == "platform" {
 		roleImage := addRoleRequest.Image
 		var image dal.Image
 		image.ImageSource = addRoleRequest.ImageSource
 		image.ImageName = roleImage.Name
+		image.RoleId = roleId
 		imageId, err := dal.AddRoleImage(image)
 		if err != nil {
 			log.Printf("[AddRole] 服务添加角色image信息失败")
-			return 0, errors.New("添加角色image信息失败")
+			return errors.New("添加角色image信息失败")
 		}
 		log.Printf("[AddRole] 服务添加角色imageId:%+v", imageId)
-		return imageId, nil
+		return nil
 	}
-	return 0, nil
-}
-
-// AddRoleInfo 添加角色信息部分
-func AddRoleInfo(addRoleRequest RoleStruct, codeId int64, pyDepId int64, imageId int64, userId int64) (int64, error) {
-	var role dal.Role
-	role.RoleName = addRoleRequest.Name
-	role.Description = *addRoleRequest.Description
-	role.PyVersion = addRoleRequest.PyVersion
-	role.CodeId = codeId
-	role.WorkDir = *addRoleRequest.WorkDir
-	role.RunCommand = addRoleRequest.RunCommand
-	role.PyDevId = pyDepId
-	role.ImageId = imageId
-	role.ImageName = addRoleRequest.Image.Name
-	role.UserId = userId
-	roleId, err := dal.AddRole(role)
-	if err != nil {
-		log.Printf("[AddRole] 服务添加角色信息失败")
-		return 0, errors.New("添加角色信息失败")
-	}
-	log.Printf("[AddRole] 服务添加角色roleId:%+v", roleId)
-	return roleId, nil
+	return nil
 }
 
 // AddRoleOutputItem 添加角色outputItem部分
@@ -227,11 +255,11 @@ func GetAllRole(username string) ([]RoleListResponse, error) {
 	return responseList, nil
 }
 
-// GetRoleDetail 获取角色详细信息
+//GetRoleDetail 获取角色详细信息
 func GetRoleDetail(username, roleName string) (RoleStruct, error) {
 	var roleResult *RoleStruct
 	roleResult = new(RoleStruct)
-	//通过username获取id
+	//通过username获取userId
 	userId, err := dal.GetUserId(username)
 	if err != nil {
 		log.Printf("[GetAllRole] 服务获取用户id失败")
@@ -279,14 +307,14 @@ func GetRoleDetail(username, roleName string) (RoleStruct, error) {
 		log.Printf("[GetAllRole] 服务获取角色pyDep信息失败")
 		return *roleResult, errors.New("服务获取角色pyDep信息失败")
 	}
-	roleResult.PyDepSource = pyDepInfo.PyDevSource
-	if pyDepInfo.PyDevSource == "upload" || pyDepInfo.PyDevSource == "manual" {
+	roleResult.PyDepSource = pyDepInfo.PyDepSource
+	if pyDepInfo.PyDepSource == "upload" || pyDepInfo.PyDepSource == "manual" {
 		roleResult.PyDep.Packages = new(string)
-		*roleResult.PyDep.Packages = pyDepInfo.PyDevPackages
-	} else if pyDepInfo.PyDevSource == "git" {
+		*roleResult.PyDep.Packages = pyDepInfo.PyDepPackages
+	} else if pyDepInfo.PyDepSource == "git" {
 		roleResult.PyDep.Git = new(GitRepository)
-		roleResult.PyDep.Git.Filepath = pyDepInfo.PyDevGitFilepath
-		roleResult.PyDep.Git.URL = pyDepInfo.PyDevGitUrl
+		roleResult.PyDep.Git.Filepath = pyDepInfo.PyDepGitFilepath
+		roleResult.PyDep.Git.URL = pyDepInfo.PyDepGitUrl
 	}
 
 	//image
@@ -327,4 +355,33 @@ func GetRoleDetail(username, roleName string) (RoleStruct, error) {
 	roleResult.OutputItems = outputItemList
 
 	return *roleResult, nil
+}
+
+// UpdateRole 更新角色信息
+func UpdateRole(roleName string, roleUpdateInfo RoleUpdateRequest, username string) error {
+	//通过username获取id
+	userId, err := dal.GetUserId(username)
+	if err != nil {
+		log.Printf("[UpdateRole] 服务获取用户id失败")
+		return errors.New("服务获取用户id失败")
+	}
+	roleId, err1 := dal.GetRoleId(userId, roleName)
+	if err1 != nil {
+		log.Printf("[UpdateRole] 服务修改角色信息失败，用户无权修改角色")
+		return errors.New("用户无权修改角色")
+	}
+
+	//role：判断userId和roleId后，直接修改description，py_version，work_dir，run_command
+	//TODO：直接传个role算了
+	err = dal.UpdateRoleInfo(roleId, *roleUpdateInfo.Description, roleUpdateInfo.PyVersion,
+		*roleUpdateInfo.WorkDir, roleUpdateInfo.RunCommand)
+	if err != nil {
+		log.Printf("[UpdateRole] 服务修改角色信息失败")
+		return errors.New("服务修改角色信息失败")
+	}
+	//code：直接修改
+	//pyDep：直接修改
+	//images：直接修改+修改role中的image_name
+	//outputItem：删除后添加
+	return nil
 }

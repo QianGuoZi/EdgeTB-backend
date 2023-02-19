@@ -6,22 +6,38 @@ import (
 )
 
 //用于管理角色
+//TODO:image的存在与唯一未判断
 
-// CheckRoleExist 检查是否已存在image和role
-func CheckRoleExist(roleName, imageName, imageSource string) error {
-	var checkImage Image
-	check := DB.Model(&Image{}).Where("image_name = ? && image_source = ?", imageName, imageSource).First(&checkImage)
-	if check.Error == nil {
-		log.Printf("[CheckRoleExist] image信息已存在")
-		return errors.New("image信息已存在")
+// GetRoleId 检查用户与角色并获取角色id
+func GetRoleId(userId int64, roleName string) (int64, error) {
+	role := Role{}
+	DB.Model(&Role{}).Where("role_name = ? && user_id = ?", roleName, userId).First(&role)
+	if role.Id == 0 {
+		return 0, errors.New("无法找到该角色")
 	}
+	log.Printf("[GetRoleId] roleId=%+v", role.Id)
+	return role.Id, nil
+}
+
+// CheckRoleExist 检查是否已存在role
+func CheckRoleExist(roleName string) error {
 	var checkRole Role
-	check = DB.Model(&Role{}).Where("role_name = ? ", roleName).First(&checkRole)
+	check := DB.Model(&Role{}).Where("role_name = ? ", roleName).First(&checkRole)
 	if check.Error == nil {
 		log.Printf("[CheckRoleExist] role信息已存在")
 		return errors.New("role信息已存在")
 	}
 	return nil
+}
+
+// AddRole 添加角色信息
+func AddRole(role Role) (int64, error) {
+	result := DB.Model(&Role{}).Create(&role)
+	if result.Error != nil {
+		log.Printf("[AddRole] 数据库创建角色信息失败")
+		return 0, result.Error
+	}
+	return role.Id, nil
 }
 
 // AddRoleCode 添加角色code信息
@@ -35,13 +51,13 @@ func AddRoleCode(code Code) (int64, error) {
 }
 
 // AddRolePyDep 添加角色pyDep信息
-func AddRolePyDep(pyDev PyDev) (int64, error) {
-	result := DB.Model(&PyDev{}).Create(&pyDev)
+func AddRolePyDep(pyDep PyDep) (int64, error) {
+	result := DB.Model(&PyDep{}).Create(&pyDep)
 	if result.Error != nil {
 		log.Printf("[AddRolePyDep] 数据库创建角色pyDep信息失败")
 		return 0, result.Error
 	}
-	return pyDev.Id, nil
+	return pyDep.Id, nil
 }
 
 // AddRoleImage 添加角色image信息
@@ -52,16 +68,6 @@ func AddRoleImage(image Image) (int64, error) {
 		return 0, result.Error
 	}
 	return image.Id, nil
-}
-
-// AddRole 添加角色信息
-func AddRole(role Role) (int64, error) {
-	result := DB.Model(&Role{}).Create(&role)
-	if result.Error != nil {
-		log.Printf("[AddRole] 数据库创建角色信息失败")
-		return 0, result.Error
-	}
-	return role.Id, nil
 }
 
 // AddRoleOutputItem 添加outputItem信息
@@ -101,9 +107,9 @@ func GetRoleInfo(userId int64, roleName string) (Role, error) {
 }
 
 // GetRoleCode 获取角色code信息
-func GetRoleCode(codeId int64) (Code, error) {
+func GetRoleCode(roleId int64) (Code, error) {
 	var codeInfo Code
-	result := DB.Model(&Code{}).Where("id = ?", codeId).First(&codeInfo)
+	result := DB.Model(&Code{}).Where("role_id = ?", roleId).First(&codeInfo)
 	if result.Error != nil {
 		log.Printf("[GetRoleCode] 数据库获取角色code信息失败")
 		return codeInfo, result.Error
@@ -113,9 +119,9 @@ func GetRoleCode(codeId int64) (Code, error) {
 }
 
 // GetRolePyDep 获取角色pyDep信息
-func GetRolePyDep(codeId int64) (PyDev, error) {
-	var pyDepInfo PyDev
-	result := DB.Model(&PyDev{}).Where("id = ?", codeId).First(&pyDepInfo)
+func GetRolePyDep(roleId int64) (PyDep, error) {
+	var pyDepInfo PyDep
+	result := DB.Model(&PyDep{}).Where("role_id = ?", roleId).First(&pyDepInfo)
 	if result.Error != nil {
 		log.Printf("[GetRolePyDep] 数据库获取角色pyDep信息失败")
 		return pyDepInfo, result.Error
@@ -125,9 +131,9 @@ func GetRolePyDep(codeId int64) (PyDev, error) {
 }
 
 // GetRoleImage 获取角色image信息
-func GetRoleImage(codeId int64) (Image, error) {
+func GetRoleImage(roleId int64) (Image, error) {
 	var imageInfo Image
-	result := DB.Model(&Image{}).Where("id = ?", codeId).First(&imageInfo)
+	result := DB.Model(&Image{}).Where("role_id = ?", roleId).First(&imageInfo)
 	if result.Error != nil {
 		log.Printf("[GetRolePyDep] 数据库获取角色image信息失败")
 		return imageInfo, result.Error
@@ -147,4 +153,26 @@ func GetRoleOutputItem(roleId int64) ([]OutputItem, int, error) {
 	listLen := len(outputItemList)
 	log.Printf("[GetRoleOutputItem] 数据库获取角色outputItem信息成功，长度为%+v", listLen)
 	return outputItemList, listLen, nil
+}
+
+// UpdateRoleInfo 更新角色信息
+func UpdateRoleInfo(roleId int64, description, pyVersion, workDir, runCommand string) error {
+	result := DB.Model(&Role{}).Where("role_id = ? ", roleId).
+		Updates(Role{Description: description, PyVersion: pyVersion, WorkDir: workDir, RunCommand: runCommand})
+	if result.Error != nil {
+		log.Printf("[UpdateRoleInfo] 数据库更新角色信息失败")
+		return result.Error
+	}
+	return nil
+}
+
+// UpdateRoleCode 更新角色code信息
+func UpdateRoleCode(roleId, codeFileName, codeFileUrl, codeGitUrl string, codeFileSize int64) error {
+	result := DB.Model(&Code{}).Where("role_id = ?", roleId).
+		Updates(Code{CodeFileName: codeFileName, CodeFileSize: codeFileSize, CodeFileUrl: codeFileUrl, CodeGitUrl: codeGitUrl})
+	if result.Error != nil {
+		log.Printf("[UpdateRoleInfo] 数据库更新角色code信息失败")
+		return result.Error
+	}
+	return nil
 }
