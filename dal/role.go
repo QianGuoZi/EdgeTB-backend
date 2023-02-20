@@ -157,7 +157,7 @@ func GetRoleOutputItem(roleId int64) ([]OutputItem, int, error) {
 
 // UpdateRoleInfo 更新角色信息
 func UpdateRoleInfo(roleId int64, description, pyVersion, workDir, runCommand string) error {
-	result := DB.Model(&Role{}).Where("role_id = ? ", roleId).
+	result := DB.Model(&Role{}).Where("id = ? ", roleId).
 		Updates(Role{Description: description, PyVersion: pyVersion, WorkDir: workDir, RunCommand: runCommand})
 	if result.Error != nil {
 		log.Printf("[UpdateRoleInfo] 数据库更新角色信息失败")
@@ -167,11 +167,145 @@ func UpdateRoleInfo(roleId int64, description, pyVersion, workDir, runCommand st
 }
 
 // UpdateRoleCode 更新角色code信息
-func UpdateRoleCode(roleId, codeFileName, codeFileUrl, codeGitUrl string, codeFileSize int64) error {
-	result := DB.Model(&Code{}).Where("role_id = ?", roleId).
-		Updates(Code{CodeFileName: codeFileName, CodeFileSize: codeFileSize, CodeFileUrl: codeFileUrl, CodeGitUrl: codeGitUrl})
+func UpdateRoleCode(roleId, codeFileSize int64, codeSource, codeFileName, codeFileUrl, codeGitUrl string) error {
+	if codeSource == "upload" {
+		if codeFileName == "" {
+			return nil
+		}
+		result := DB.Model(&Code{}).Where("role_id = ?", roleId).
+			Updates(Code{CodeFileName: codeFileName, CodeFileSize: codeFileSize, CodeFileUrl: codeFileUrl})
+		if result.Error != nil {
+			log.Printf("[UpdateRoleCode] 数据库更新角色code信息失败")
+			return result.Error
+		}
+		return nil
+	} else if codeSource == "git" {
+		result := DB.Model(&Code{}).Where("role_id = ?", roleId).
+			Updates(Code{CodeGitUrl: codeGitUrl})
+		if result.Error != nil {
+			log.Printf("[UpdateRoleCode] 数据库更新角色code信息失败")
+			return result.Error
+		}
+		return nil
+	}
+	return nil
+}
+
+// UpdateRolePyDep 更新角色pyDep信息
+func UpdateRolePyDep(roleId int64, pyDepSource, pyDepPackage, pyDepGitUrl, pyDepGitFilepath string) error {
+	if pyDepSource == "upload" || pyDepSource == "manual" {
+		result := DB.Model(&PyDep{}).Where("role_id = ?", roleId).
+			Updates(PyDep{PyDepPackages: pyDepPackage})
+		if result.Error != nil {
+			log.Printf("[UpdateRolePyDep] 数据库更新角色pyDep信息失败")
+			return result.Error
+		}
+		return nil
+	} else if pyDepSource == "git" {
+		result := DB.Model(&PyDep{}).Where("role_id = ?", roleId).
+			Updates(PyDep{PyDepGitUrl: pyDepGitUrl, PyDepGitFilepath: pyDepGitFilepath})
+		if result.Error != nil {
+			log.Printf("[UpdateRolePyDep] 数据库更新角色pyDep信息失败")
+			return result.Error
+		}
+		return nil
+	}
+	return nil
+}
+
+// UpdateRoleImage 更新角色image信息
+//TODO：imageName的更新未确定
+func UpdateRoleImage(roleId int64, imageSource, imageName, imageDockerfileUrl, imageDockerfileName,
+	imageArchiveUrl, imageArchiveName, imageGitUrl, imageGitFilepath string, imageDockerfileSize, imageArchiveSize int64) error {
+	if imageSource == "platform" || imageSource == "dockerHub" {
+		result := DB.Model(&Image{}).Where("role_id = ?", roleId).
+			Updates(Image{ImageName: imageName})
+		if result.Error != nil {
+			log.Printf("[UpdateRoleImage] 数据库更新角色image_platform/dockerHub信息失败")
+			return result.Error
+		}
+		result = DB.Model(&Role{}).Where("id = ? ", roleId).
+			Updates(Role{ImageName: imageName})
+		if result.Error != nil {
+			log.Printf("[UpdateRoleImage] 数据库更新角色imageName信息失败")
+			return result.Error
+		}
+		return nil
+	} else if imageSource == "uploadDockerfile" {
+		result := DB.Model(&Image{}).Where("role_id = ?", roleId).
+			Updates(Image{ImageDockerfileUrl: imageDockerfileUrl, ImageDockerfileSize: imageDockerfileSize,
+				ImageDockerfileName: imageDockerfileName})
+		if result.Error != nil {
+			log.Printf("[UpdateRoleImage] 数据库更新角色image_uploadDockerfile信息失败")
+			return result.Error
+		}
+		return nil
+	} else if imageSource == "uploadArchive" {
+		result := DB.Model(&Image{}).Where("role_id = ?", roleId).
+			Updates(Image{ImageArchiveUrl: imageArchiveUrl, ImageArchiveSize: imageArchiveSize,
+				ImageArchiveName: imageArchiveName})
+		if result.Error != nil {
+			log.Printf("[UpdateRoleImage] 数据库更新角色image_uploadArchive信息失败")
+			return result.Error
+		}
+		return nil
+	} else if imageSource == "git" {
+		result := DB.Model(&Image{}).Where("role_id = ?", roleId).
+			Updates(Image{ImageGitUrl: imageGitUrl, ImageGitFilepath: imageGitFilepath})
+		if result.Error != nil {
+			log.Printf("[UpdateRoleImage] 数据库更新角色image_git信息失败")
+			return result.Error
+		}
+		return nil
+	}
+	return nil
+}
+
+// DeleteRoleInfo 删除角色信息
+func DeleteRoleInfo(roleId int64) error {
+	result := DB.Where("id = ?", roleId).Delete(&Role{})
 	if result.Error != nil {
-		log.Printf("[UpdateRoleInfo] 数据库更新角色code信息失败")
+		log.Printf("[DeleteRoleInfo] 数据库删除角色信息失败")
+		return result.Error
+	}
+	return nil
+}
+
+// DeleteRoleCode 删除角色code信息
+func DeleteRoleCode(roleId int64) error {
+	result := DB.Where("role_id = ?", roleId).Delete(&Code{})
+	if result.Error != nil {
+		log.Printf("[DeleteRoleCode] 数据库删除角色code信息失败")
+		return result.Error
+	}
+	return nil
+}
+
+// DeleteRolePyDep 删除角色pyDep信息
+func DeleteRolePyDep(roleId int64) error {
+	result := DB.Where("role_id = ?", roleId).Delete(&PyDep{})
+	if result.Error != nil {
+		log.Printf("[DeleteRolePyDep] 数据库删除角色pyDep信息失败")
+		return result.Error
+	}
+	return nil
+}
+
+// DeleteRoleImage 删除角色image信息
+func DeleteRoleImage(roleId int64) error {
+	result := DB.Where("role_id = ?", roleId).Delete(&Image{})
+	if result.Error != nil {
+		log.Printf("[DeleteRoleImage] 数据库删除角色image信息失败")
+		return result.Error
+	}
+	return nil
+}
+
+// DeleteRoleOutputItem 删除角色outputItem信息
+func DeleteRoleOutputItem(roleId int64) error {
+	result := DB.Where("role_id = ?", roleId).Delete(&OutputItem{})
+	if result.Error != nil {
+		log.Printf("[DeleteRoleOutputItem] 数据库删除角色outputItem信息失败")
 		return result.Error
 	}
 	return nil

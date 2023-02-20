@@ -365,6 +365,7 @@ func UpdateRole(roleName string, roleUpdateInfo RoleUpdateRequest, username stri
 		log.Printf("[UpdateRole] 服务获取用户id失败")
 		return errors.New("服务获取用户id失败")
 	}
+	//通过roleName获取roleId
 	roleId, err1 := dal.GetRoleId(userId, roleName)
 	if err1 != nil {
 		log.Printf("[UpdateRole] 服务修改角色信息失败，用户无权修改角色")
@@ -372,7 +373,6 @@ func UpdateRole(roleName string, roleUpdateInfo RoleUpdateRequest, username stri
 	}
 
 	//role：判断userId和roleId后，直接修改description，py_version，work_dir，run_command
-	//TODO：直接传个role算了
 	err = dal.UpdateRoleInfo(roleId, *roleUpdateInfo.Description, roleUpdateInfo.PyVersion,
 		*roleUpdateInfo.WorkDir, roleUpdateInfo.RunCommand)
 	if err != nil {
@@ -380,8 +380,86 @@ func UpdateRole(roleName string, roleUpdateInfo RoleUpdateRequest, username stri
 		return errors.New("服务修改角色信息失败")
 	}
 	//code：直接修改
+	err = dal.UpdateRoleCode(roleId, roleUpdateInfo.Code.File.Size, roleUpdateInfo.CodeSource, roleUpdateInfo.Code.File.FileName,
+		roleUpdateInfo.Code.File.URL, *roleUpdateInfo.Code.GitURL)
+	if err != nil {
+		log.Printf("[UpdateRole] 服务修改角色code信息失败")
+		return errors.New("服务修改角色code信息失败")
+	}
 	//pyDep：直接修改
+	err = dal.UpdateRolePyDep(roleId, roleUpdateInfo.PyDepSource, *roleUpdateInfo.PyDep.Packages,
+		roleUpdateInfo.PyDep.Git.URL, roleUpdateInfo.PyDep.Git.Filepath)
+	if err != nil {
+		log.Printf("[UpdateRole] 服务修改角色pyDep信息失败")
+		return errors.New("服务修改角色pyDep信息失败")
+	}
 	//images：直接修改+修改role中的image_name
+	err = dal.UpdateRoleImage(roleId, roleUpdateInfo.ImageSource, roleUpdateInfo.Image.Name,
+		roleUpdateInfo.Image.Dockerfile.URL, roleUpdateInfo.Image.Dockerfile.FileName,
+		roleUpdateInfo.Image.Archive.URL, roleUpdateInfo.Image.Archive.FileName,
+		roleUpdateInfo.Image.Git.URL, roleUpdateInfo.Image.Git.Filepath,
+		roleUpdateInfo.Image.Dockerfile.Size, roleUpdateInfo.Image.Archive.Size)
+	if err != nil {
+		log.Printf("[UpdateRole] 服务修改角色image信息失败")
+		return errors.New("服务修改角色image信息失败")
+	}
 	//outputItem：删除后添加
+	err = dal.DeleteRoleOutputItem(roleId)
+	if err != nil {
+		log.Printf("[UpdateRole] 服务删除角色outputItem信息失败")
+		return errors.New("服务修改角色outputItem信息失败")
+	}
+	err = AddRoleOutputItem(roleUpdateInfo.OutputItems, roleId)
+	if err != nil {
+		log.Printf("[UpdateRole] 服务添加角色outputItem信息失败")
+		return errors.New("服务修改角色outputItem信息失败")
+	}
+	return nil
+}
+
+// DeleteRole 删除角色信息
+func DeleteRole(username, roleName string) error {
+	//通过username获取id
+	userId, err := dal.GetUserId(username)
+	if err != nil {
+		log.Printf("[DeleteRole] 服务获取用户id失败")
+		return errors.New("服务获取用户id失败")
+	}
+	//通过roleName获取roleId
+	roleId, err1 := dal.GetRoleId(userId, roleName)
+	if err1 != nil {
+		log.Printf("[DeleteRole] 服务删除角色信息失败，用户无权修改角色")
+		return errors.New("用户无权删除角色")
+	}
+	//code
+	err = dal.DeleteRoleCode(roleId)
+	if err != nil {
+		log.Printf("[DeleteRole] 服务删除角色code信息失败")
+		return errors.New("服务删除角色code信息失败")
+	}
+	//pyDep
+	err = dal.DeleteRolePyDep(roleId)
+	if err != nil {
+		log.Printf("[DeleteRole] 服务删除角色pyDep信息失败")
+		return errors.New("服务删除角色pyDep信息失败")
+	}
+	//image
+	err = dal.DeleteRoleImage(roleId)
+	if err != nil {
+		log.Printf("[DeleteRole] 服务删除角色image信息失败")
+		return errors.New("服务删除角色image信息失败")
+	}
+	//outputItem
+	err = dal.DeleteRoleOutputItem(roleId)
+	if err != nil {
+		log.Printf("[DeleteRole] 服务删除角色outputItem信息失败")
+		return errors.New("服务修改角色outputItem信息失败")
+	}
+	//role
+	err = dal.DeleteRoleInfo(roleId)
+	if err != nil {
+		log.Printf("[DeleteRole] 服务删除角色信息失败")
+		return errors.New("服务修改角色信息失败")
+	}
 	return nil
 }

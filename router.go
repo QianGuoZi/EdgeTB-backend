@@ -38,6 +38,8 @@ func initRouter(r *gin.Engine) {
 		apiRouter.GET("/role", handler.AllRole)
 		apiRouter.GET("/role/:name", handler.RoleDetail)
 		apiRouter.POST("/role/upload/code", handler.UploadRoleCode)
+		apiRouter.PUT("/role/:name", handler.UpdateRole)
+		apiRouter.DELETE("/role/:name", handler.DeleteRole)
 	}
 
 	//平台镜像 apis

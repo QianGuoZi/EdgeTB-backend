@@ -37,6 +37,15 @@ func AddRole(c *gin.Context) {
 	var newRole service.RoleStruct
 	err1 := c.ShouldBind(&newRole)
 	log.Printf("[AddRole] newRole=%+v", newRole)
+	newRole.Description = new(string)
+	newRole.WorkDir = new(string)
+	newRole.Code.File = new(service.UploadedFile)
+	newRole.Code.GitURL = new(string)
+	newRole.PyDep.Packages = new(string)
+	newRole.PyDep.Git = new(service.GitRepository)
+	newRole.Image.Git = new(service.GitRepository)
+	newRole.Image.Archive = new(service.UploadedFile)
+	newRole.Image.Dockerfile = new(service.UploadedFile)
 	if err1 != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
@@ -108,7 +117,7 @@ func RoleDetail(c *gin.Context) {
 	roleName := c.Param("name")
 	log.Printf("[RoleDetail] roleName=%+v", roleName)
 	if roleName == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusNotFound, gin.H{
 			"success": false,
 			"message": "角色名数据格式有误",
 		})
@@ -148,8 +157,24 @@ func UpdateRole(c *gin.Context) {
 	//获取角色name
 	roleName := c.Param("name")
 	log.Printf("[UpdateRole] roleName=%+v", roleName)
+	if roleName == "" {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": "角色名数据格式有误",
+		})
+		return
+	}
 	//获取修改的数据
 	var roleUpdateInfo service.RoleUpdateRequest
+	roleUpdateInfo.Description = new(string)
+	roleUpdateInfo.WorkDir = new(string)
+	roleUpdateInfo.Code.File = new(service.UploadedFile)
+	roleUpdateInfo.Code.GitURL = new(string)
+	roleUpdateInfo.PyDep.Packages = new(string)
+	roleUpdateInfo.PyDep.Git = new(service.GitRepository)
+	roleUpdateInfo.Image.Git = new(service.GitRepository)
+	roleUpdateInfo.Image.Archive = new(service.UploadedFile)
+	roleUpdateInfo.Image.Dockerfile = new(service.UploadedFile)
 	err1 := c.ShouldBind(&roleUpdateInfo)
 	log.Printf("[UpdateRole] roleUpdate=%+v", roleUpdateInfo)
 	if err1 != nil {
@@ -194,8 +219,28 @@ func DeleteRole(c *gin.Context) {
 	//获取角色name
 	roleName := c.Param("name")
 	log.Printf("[RoleDetail] roleName=%+v", roleName)
+	if roleName == "" {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": "角色名数据格式有误",
+		})
+		return
+	}
 	//service层处理删除
+	err = service.DeleteRole(username, roleName)
 	//返回成功或失败
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "角色删除失败",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "角色删除成功",
+	})
+	return
 }
 
 // UploadRoleCode 上传本地代码文件
