@@ -62,7 +62,7 @@ func UploadDatasetFile(filePath string) (string, string, int, error) {
 
 // AddDatasetByUpload 添加数据集信息（upload）
 func AddDatasetByUpload(setName string, description string, setType string, source string,
-	url string, fileName string, setSize int, userName string) (int, error) {
+	url string, fileName string, setSize int, username string) (int, error) {
 	dataSet := dal.Dataset{}
 	dataSet.DatasetName = setName
 	dataSet.Description = description
@@ -73,7 +73,7 @@ func AddDatasetByUpload(setName string, description string, setType string, sour
 	dataSet.FileName = fileName
 	dataSet.Size = int64(setSize)
 	//通过username获取id
-	userId, err := dal.GetUserId(userName)
+	userId, err := dal.GetUserId(username)
 	if err != nil {
 		log.Printf("[AddDatasetByUpload] 服务获取用户id失败")
 		return 0, errors.New("服务获取用户id失败")
@@ -134,10 +134,10 @@ func GetPublicDatasetDetails(datasetId int) (PublicDetails, error) {
 }
 
 // AllPrivateDatasets 获取用户所有数据集List
-func AllPrivateDatasets(userName string) ([]PrivateDataset, error) {
+func AllPrivateDatasets(username string) ([]PrivateDataset, error) {
 	privateDataset := make([]PrivateDataset, 1)
 	//通过username获取id
-	userId, err := dal.GetUserId(userName)
+	userId, err := dal.GetUserId(username)
 	if err != nil {
 		log.Printf("[AllPrivateDatasets] 服务获取用户id失败")
 		return privateDataset, errors.New("服务获取用户id失败")
@@ -162,10 +162,10 @@ func AllPrivateDatasets(userName string) ([]PrivateDataset, error) {
 }
 
 // GetPrivateDatasetDetails 获取自定义数据集详情
-func GetPrivateDatasetDetails(userName string, datasetId int) (PrivateDetails, error) {
+func GetPrivateDatasetDetails(username string, datasetId int) (PrivateDetails, error) {
 	privateDetails := PrivateDetails{}
 	//通过username获取id
-	userId, err := dal.GetUserId(userName)
+	userId, err := dal.GetUserId(username)
 	if err != nil {
 		log.Printf("[GetPrivateDatasetDetails] 服务获取用户id失败")
 		return privateDetails, errors.New("服务获取用户id失败")
@@ -194,9 +194,9 @@ func GetPrivateDatasetDetails(userName string, datasetId int) (PrivateDetails, e
 }
 
 // UpdateDataset 修改数据集信息
-func UpdateDataset(userName string, datasetId int, setName string, description string) error {
+func UpdateDataset(username string, datasetId int, setName string, description string) error {
 	//通过username获取id
-	userId, err := dal.GetUserId(userName)
+	userId, err := dal.GetUserId(username)
 	if err != nil {
 		log.Printf("[UpdateDataset] 服务获取用户id失败")
 		return errors.New("服务获取用户id失败")
@@ -215,9 +215,9 @@ func UpdateDataset(userName string, datasetId int, setName string, description s
 }
 
 // DeleteDataset 删除数据集信息
-func DeleteDataset(userName string, datasetId int) error {
+func DeleteDataset(username string, datasetId int) error {
 	//通过username获取id
-	userId, err := dal.GetUserId(userName)
+	userId, err := dal.GetUserId(username)
 	if err != nil {
 		log.Printf("[DeleteDataset] 服务获取用户id失败")
 		return errors.New("服务获取用户id失败")
