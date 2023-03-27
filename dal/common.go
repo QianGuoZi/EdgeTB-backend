@@ -13,6 +13,7 @@ type User struct {
 	CreatedAt time.Time `json:"-" gorm:"index:,sort:desc"`
 	Dataset   []Dataset `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Role      []Role    `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Project   []Project `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 type Dataset struct {
@@ -37,6 +38,7 @@ type Role struct {
 	WorkDir     string    `json:"work_dir,omitempty" gorm:"type:varchar(100)"`
 	RunCommand  string    `json:"run_command,omitempty" gorm:"type:varchar(100)"`
 	ImageName   string    `json:"image_name,omitempty" gorm:"type:varchar(100)"`
+	ProjectId   int64     `json:"project_id,omitempty" gorm:"type:int"`
 	UserId      int64     `json:"user_id,omitempty" gorm:"type:foreignKey"`
 	CreatedAt   time.Time `json:"-" gorm:"index:,sort:desc"`
 }
@@ -96,7 +98,6 @@ type OutputItem struct {
 type Project struct {
 	Id          int64     `json:"id,omitempty" gorm:"primaryKey"`
 	ProjectName string    `json:"project_name,omitempty" gorm:"type:varchar(100)"`
-	RoleId      int64     `json:"role_id,omitempty" gorm:"type:int"`
 	DatasetId   int64     `json:"dataset_id,omitempty" gorm:"type:int"`
 	UserId      int64     `json:"user_id,omitempty" gorm:"type:foreignKey"`
 	CreatedAt   time.Time `json:"-" gorm:"index:,sort:desc"`

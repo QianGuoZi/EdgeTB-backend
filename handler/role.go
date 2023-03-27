@@ -33,6 +33,9 @@ func AddRole(c *gin.Context) {
 		return
 	}
 	log.Printf("[GetUserInfo] success username=%+v", username)
+	//获取项目名称
+	projectName, _ := c.GetQuery("project")
+	log.Printf("[AddRole] projectName=%+v", projectName)
 	//获取数据
 	var newRole service.RoleStruct
 	err1 := c.ShouldBind(&newRole)
@@ -54,7 +57,7 @@ func AddRole(c *gin.Context) {
 		return
 	}
 	//传给Service层处理
-	err = service.AddRole(newRole, username)
+	err = service.AddRole(newRole, username, projectName)
 	//返回成功或失败消息
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{

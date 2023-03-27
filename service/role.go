@@ -90,7 +90,7 @@ func UploadRoleCodeFile(filePath string) (string, string, int, error) {
 }
 
 // AddRole 添加角色
-func AddRole(addRoleRequest RoleStruct, username string) error {
+func AddRole(addRoleRequest RoleStruct, username, projectName string) error {
 	//通过username获取id
 	userId, err := dal.GetUserId(username)
 	if err != nil {
@@ -102,8 +102,13 @@ func AddRole(addRoleRequest RoleStruct, username string) error {
 		log.Printf("[AddRole] 服务添加角色失败，角色重复")
 		return errors.New("角色重复")
 	}
+	projectId, err := dal.GetProjectId(projectName)
+	if err != nil {
+		log.Printf("[AddRole] 服务获取项目id失败")
+		return errors.New("服务获取项目id失败")
+	}
 	//role
-	roleId, err1 := AddRoleInfo(addRoleRequest, userId)
+	roleId, err1 := AddRoleInfo(addRoleRequest, userId, projectId)
 	if err1 != nil {
 		return errors.New("添加角色信息失败")
 	}
@@ -131,7 +136,7 @@ func AddRole(addRoleRequest RoleStruct, username string) error {
 }
 
 // AddRoleInfo 添加角色信息部分
-func AddRoleInfo(addRoleRequest RoleStruct, userId int64) (int64, error) {
+func AddRoleInfo(addRoleRequest RoleStruct, userId, projectId int64) (int64, error) {
 	var role dal.Role
 	role.RoleName = addRoleRequest.Name
 	role.Description = *addRoleRequest.Description
@@ -139,6 +144,7 @@ func AddRoleInfo(addRoleRequest RoleStruct, userId int64) (int64, error) {
 	role.WorkDir = *addRoleRequest.WorkDir
 	role.RunCommand = addRoleRequest.RunCommand
 	role.ImageName = addRoleRequest.Image.Name
+	role.ProjectId = projectId
 	role.UserId = userId
 	roleId, err := dal.AddRole(role)
 	if err != nil {

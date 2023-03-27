@@ -47,4 +47,11 @@ func initRouter(r *gin.Engine) {
 		apiRouter.GET("/image", handler.GetPlatformImageList)
 		apiRouter.POST("/image", handler.AddPlatformImage)
 	}
+
+	//项目 apis
+	{
+		apiRouter.POST("/project", handler.AddProject)
+		apiRouter.GET("/project", handler.AllProject)
+		apiRouter.GET("/project/:name", handler.ProjectDetail)
+	}
 }
