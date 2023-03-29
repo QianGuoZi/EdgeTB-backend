@@ -282,7 +282,7 @@ func UploadDataset(c *gin.Context) {
 	log.Printf("[UploadDataset] fileName=%+v", file.Filename)
 	log.Printf("[UploadDataset] uploadFileType=%+v", uploadFileType)
 	//判断后缀是否合法
-	checkResult := CheckFile(uploadFileType)
+	checkResult := CheckZipFile(uploadFileType)
 	log.Printf("[UploadDataset] checkResult=%+v", checkResult)
 	if checkResult != true {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -326,17 +326,6 @@ func UploadDataset(c *gin.Context) {
 		"data":    returnData,
 	})
 	return
-}
-
-// CheckFile 检查文件类型是否符合
-func CheckFile(uploadFileType string) bool {
-	fileTypeList := []string{".zip", ".rar", ".gz", ".tar.gz", "tgz", "bz2", "z", "tar"}
-	for _, element := range fileTypeList {
-		if uploadFileType == element {
-			return true
-		}
-	}
-	return false
 }
 
 // AddDataset 创建自定义数据集

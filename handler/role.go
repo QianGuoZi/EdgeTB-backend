@@ -14,12 +14,6 @@ type RoleDetailRequest struct {
 	Name string `json:"name"` // 角色名称，唯一
 }
 
-type RoleCodeFileReturn struct {
-	Url      string `form:"url" json:"url"`           //文件url
-	FileName string `form:"fileName" json:"fileName"` //文件名称
-	Size     int    `form:"size" json:"size"`         //文件大小
-}
-
 // AddRole 创建角色
 func AddRole(c *gin.Context) {
 	//获取用户username
@@ -284,7 +278,7 @@ func UploadRoleCode(c *gin.Context) {
 	log.Printf("[UploadRoleCode] fileName=%+v", file.Filename)
 	log.Printf("[UploadRoleCode] uploadFileType=%+v", uploadFileType)
 	//判断后缀是否合法
-	checkResult := CheckFile(uploadFileType)
+	checkResult := CheckZipFile(uploadFileType)
 	log.Printf("[UploadRoleCode] checkResult=%+v", checkResult)
 	if checkResult != true {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -320,7 +314,7 @@ func UploadRoleCode(c *gin.Context) {
 		})
 		return
 	}
-	returnData := RoleCodeFileReturn{filePath, fileName, size}
+	returnData := FileReturn{filePath, fileName, size}
 	log.Printf("[UploadRoleCode] returnData=%+v", returnData)
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,

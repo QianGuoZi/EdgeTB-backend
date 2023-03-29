@@ -3,7 +3,9 @@ package service
 import (
 	"EdgeTB-backend/dal"
 	"errors"
+	"fmt"
 	"log"
+	"os"
 )
 
 type ProjectListResponse struct {
@@ -24,7 +26,7 @@ type ProjectInfoRequest struct {
 
 // Controller 控制器
 type Controller struct {
-	Manager   UploadedFile `json:"manager,omitempty"`   // manager.py文件信息
+	Manager   UploadedFile `json:"manager,omitempty"`   // Manager.py文件信息
 	Structure UploadedFile `json:"structure,omitempty"` // DML结构配置文件信息
 }
 
@@ -94,13 +96,12 @@ func GetProjectDetail(username, projectName string) (ProjectInfoResponse, error)
 	//projectName
 	projectResponse.Name = projectInfo.ProjectName
 	//config
-	//TODO：查有无config
-	if projectInfo.ManagerFileId == 0 {
+	checkResult := dal.CheckProjectConfig(projectInfo.Id)
+	if checkResult != nil {
 		projectResponse.Config = false
 	} else {
 		projectResponse.Config = true
 	}
-
 	//controller
 	projectResponse.Controller = new(Controller)
 	//manager文件信息
@@ -125,7 +126,6 @@ func GetProjectDetail(username, projectName string) (ProjectInfoResponse, error)
 		//projectResponse.Controller.Structure.FileName = structureFileInfo.FileName
 		//projectResponse.Controller.Structure.Size = structureFileInfo.Size
 	}
-
 	//dataset
 	projectResponse.Dataset = new(Dataset)
 	//datasetId
@@ -162,7 +162,7 @@ func AddProjectDetail(username, projectName string, projectInfo ProjectInfoReque
 		return errors.New("服务获取项目id失败")
 	}
 	//controller 信息添加
-	//manager
+	//Manager
 	var managerFile dal.File
 	managerFile.Name = projectInfo.Controller.Manager.FileName
 	managerFile.Url = projectInfo.Controller.Manager.URL
@@ -200,4 +200,40 @@ func AddProjectDetail(username, projectName string, projectInfo ProjectInfoReque
 		return errors.New("服务添加项目信息失败")
 	}
 	return nil
+}
+
+// UploadManager 传入文件名、路径，获取类型、大小
+func UploadManager(filePath string) (string, string, int, error) {
+	fi, err := os.Stat(filePath)
+	if err != nil {
+		log.Printf("[UploadManager] 服务获取上传文件信息失败")
+		return "", "", 0, errors.New("服务获取上传文件信息失败")
+	}
+	fmt.Println("name:", fi.Name())
+	fmt.Println("size:", fi.Size())
+	return filePath, fi.Name(), int(fi.Size()), nil
+}
+
+// UploadStructure 传入文件名、路径，获取类型、大小
+func UploadStructure(filePath string) (string, string, int, error) {
+	fi, err := os.Stat(filePath)
+	if err != nil {
+		log.Printf("[UploadStructure] 服务获取上传文件信息失败")
+		return "", "", 0, errors.New("服务获取上传文件信息失败")
+	}
+	fmt.Println("name:", fi.Name())
+	fmt.Println("size:", fi.Size())
+	return filePath, fi.Name(), int(fi.Size()), nil
+}
+
+// UploadDatasetSplitter 传入文件名、路径，获取类型、大小
+func UploadDatasetSplitter(filePath string) (string, string, int, error) {
+	fi, err := os.Stat(filePath)
+	if err != nil {
+		log.Printf("[UploadDatasetSplitter] 服务获取上传文件信息失败")
+		return "", "", 0, errors.New("服务获取上传文件信息失败")
+	}
+	fmt.Println("name:", fi.Name())
+	fmt.Println("size:", fi.Size())
+	return filePath, fi.Name(), int(fi.Size()), nil
 }

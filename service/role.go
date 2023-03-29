@@ -71,7 +71,7 @@ type RoleListResponse struct {
 	ImageName   string `json:"imageName"`             // 镜像名称
 }
 
-// UploadRoleCodeFile 传入文件名、路径，获取类型、大小，返回文件id
+// UploadRoleCodeFile 传入文件名、路径，获取类型、大小
 func UploadRoleCodeFile(filePath string) (string, string, int, error) {
 	fi, err := os.Stat(filePath)
 	if err != nil {

@@ -48,7 +48,7 @@ type PrivateDetails struct {
 	CreatedAt   string `form:"createdAt" json:"createdAt"`     //创建时间
 }
 
-// UploadDatasetFile 传入文件名、路径，获取类型、大小，返回文件id
+// UploadDatasetFile 传入文件名、路径，获取类型、大小
 func UploadDatasetFile(filePath string) (string, string, int, error) {
 	fi, err := os.Stat(filePath)
 	if err != nil {
