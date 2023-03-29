@@ -37,12 +37,6 @@ type RoleUpdateRequest struct {
 	OutputItems []OutputItem `json:"outputItems"` // 输出项
 }
 
-type UploadedFile struct {
-	FileName string `json:"fileName"`
-	Size     int64  `json:"size"` // 单位字节
-	URL      string `json:"url"`
-}
-
 type GitRepository struct {
 	Filepath string `json:"filepath"` // 文件夹相对路径，dockerfile所在的文件夹路径
 	URL      string `json:"url"`      // git仓库url
@@ -102,7 +96,7 @@ func AddRole(addRoleRequest RoleStruct, username, projectName string) error {
 		log.Printf("[AddRole] 服务添加角色失败，角色重复")
 		return errors.New("角色重复")
 	}
-	projectId, err := dal.GetProjectId(projectName)
+	projectId, err := dal.GetProjectId(projectName, userId)
 	if err != nil {
 		log.Printf("[AddRole] 服务获取项目id失败")
 		return errors.New("服务获取项目id失败")

@@ -96,9 +96,39 @@ type OutputItem struct {
 }
 
 type Project struct {
-	Id          int64     `json:"id,omitempty" gorm:"primaryKey"`
-	ProjectName string    `json:"project_name,omitempty" gorm:"type:varchar(100)"`
-	DatasetId   int64     `json:"dataset_id,omitempty" gorm:"type:int"`
-	UserId      int64     `json:"user_id,omitempty" gorm:"type:foreignKey"`
-	CreatedAt   time.Time `json:"-" gorm:"index:,sort:desc"`
+	Id                    int64     `json:"id,omitempty" gorm:"primaryKey"`
+	ProjectName           string    `json:"project_name,omitempty" gorm:"type:varchar(100)"`
+	DatasetId             int64     `json:"dataset_id,omitempty" gorm:"type:int"`
+	ManagerFileId         int64     `json:"manager_file_id,omitempty" gorm:"type:int"`
+	StructureFileId       int64     `json:"structure_file_id,omitempty" gorm:"type:int"`
+	DatasetSplitterFileId int64     `json:"dataset_splitter_file_id,omitempty" gorm:"type:int"`
+	UserId                int64     `json:"user_id,omitempty" gorm:"type:foreignKey"`
+	CreatedAt             time.Time `json:"-" gorm:"index:,sort:desc"`
+}
+
+type File struct {
+	Id        int64     `json:"id,omitempty" gorm:"primaryKey"`
+	Url       string    `json:"url,omitempty" gorm:"type:varchar(100)"`
+	Name      string    `json:"name,omitempty" gorm:"type:varchar(100)"`
+	Size      int64     `json:"size,omitempty" gorm:"type:int"`
+	CreatedAt time.Time `json:"-" gorm:"index:,sort:desc"`
+}
+
+type Config struct {
+	Id           int64     `json:"id,omitempty" gorm:"primaryKey"`
+	LinkType     string    `json:"link_type,omitempty" gorm:"type:varchar(100)"`
+	BandwidthMax int64     `json:"bandwidth_max,omitempty" gorm:"type:int"`
+	BandwidthMin int64     `json:"bandwidth_min,omitempty" gorm:"type:int"`
+	ProjectId    int64     `json:"project_id,omitempty" gorm:"type:int"`
+	CreatedAt    time.Time `json:"-" gorm:"index:,sort:desc"`
+}
+
+type Node struct {
+	Id        int64     `json:"id,omitempty" gorm:"primaryKey"`
+	NodeName  string    `json:"link_type,omitempty" gorm:"type:varchar(100)"`
+	CPU       int64     `json:"cpu,omitempty" gorm:"type:int"`
+	RAM       int64     `json:"ram,omitempty" gorm:"type:int"`
+	RoleName  int64     `json:"role_name,omitempty" gorm:"type:varchar(100)"`
+	ConfigId  int64     `json:"config_id,omitempty" gorm:"type:int"`
+	CreatedAt time.Time `json:"-" gorm:"index:,sort:desc"`
 }

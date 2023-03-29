@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-type Project struct {
+type ProjectAddRequest struct {
 	Name string `json:"name"` // 项目名称，唯一
 }
 
@@ -23,7 +23,7 @@ func AddProject(c *gin.Context) {
 		})
 		return
 	}
-	var projectRequest Project
+	var projectRequest ProjectAddRequest
 	err = c.ShouldBind(&projectRequest)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -101,6 +101,44 @@ func ProjectDetail(c *gin.Context) {
 		"success": true,
 		"message": "项目详情获取成功",
 		"data":    returnData,
+	})
+	return
+}
+
+// AddProjectInfo 添加项目内容
+func AddProjectInfo(c *gin.Context) {
+	//通过用户id创建项目
+	username, err := service.GetUsername(c)
+	if err != nil {
+		log.Printf("[GetUserInfo] failed err=%+v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "token有误",
+		})
+		return
+	}
+	projectName := c.Param("name")
+	log.Printf("[GetProjectDetail] projectName=%+v", projectName)
+	var projectRequest service.ProjectInfoRequest
+	err = c.ShouldBind(&projectRequest)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "项目数据格式有误",
+		})
+		return
+	}
+	err = service.AddProjectDetail(username, projectName, projectRequest)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "项目内容添加失败",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "项目内容添加成功",
 	})
 	return
 }

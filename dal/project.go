@@ -6,9 +6,9 @@ import (
 )
 
 // GetProjectId 获取项目id
-func GetProjectId(projectName string) (int64, error) {
+func GetProjectId(projectName string, userId int64) (int64, error) {
 	project := Project{}
-	DB.Model(&Project{}).Where("project_name = ?", projectName).First(&project)
+	DB.Model(&Project{}).Where("project_name = ? && user_id = ?", projectName, userId).First(&project)
 	if project.Id == 0 {
 		log.Printf("[GetProjectId] 无法找到该项目")
 		return 0, errors.New("无法找到该项目")
@@ -50,4 +50,16 @@ func GetProjectInfo(userId int64, projectName string) (Project, error) {
 	}
 	log.Printf("[GetProjectInfo] 数据库获取项目信息成功")
 	return projectInfo, nil
+}
+
+// UpdateProjectInfo 更新项目信息
+func UpdateProjectInfo(projectId, managerId, structureId, datasetId, datasetSplitterId int64) error {
+	result := DB.Model(&Project{}).Where("id = ?", projectId).
+		Updates(Project{ManagerFileId: managerId, StructureFileId: structureId,
+			DatasetId: datasetId, DatasetSplitterFileId: datasetSplitterId})
+	if result.Error != nil {
+		log.Printf("[UpdateProjectInfo] 数据库更新项目信息失败")
+		return result.Error
+	}
+	return nil
 }

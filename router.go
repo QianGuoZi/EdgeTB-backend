@@ -53,5 +53,6 @@ func initRouter(r *gin.Engine) {
 		apiRouter.POST("/project", handler.AddProject)
 		apiRouter.GET("/project", handler.AllProject)
 		apiRouter.GET("/project/:name", handler.ProjectDetail)
+		apiRouter.POST("/project/:name", handler.AddProjectInfo)
 	}
 }
