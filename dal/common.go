@@ -115,12 +115,12 @@ type File struct {
 }
 
 type Config struct {
-	Id           int64     `json:"id,omitempty" gorm:"primaryKey"`
-	LinkType     string    `json:"link_type,omitempty" gorm:"type:varchar(100)"`
-	BandwidthMax int64     `json:"bandwidth_max,omitempty" gorm:"type:int"`
-	BandwidthMin int64     `json:"bandwidth_min,omitempty" gorm:"type:int"`
-	ProjectId    int64     `json:"project_id,omitempty" gorm:"type:int"`
-	CreatedAt    time.Time `json:"-" gorm:"index:,sort:desc"`
+	Id             int64     `json:"id,omitempty" gorm:"primaryKey"`
+	LinkType       string    `json:"link_type,omitempty" gorm:"type:varchar(100)"`
+	BandwidthUpper int64     `json:"bandwidth_upper,omitempty" gorm:"type:int"`
+	BandwidthLower int64     `json:"bandwidth_lower,omitempty" gorm:"type:int"`
+	ProjectId      int64     `json:"project_id,omitempty" gorm:"type:int"`
+	CreatedAt      time.Time `json:"-" gorm:"index:,sort:desc"`
 }
 
 type Node struct {
