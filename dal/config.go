@@ -15,3 +15,13 @@ func CheckProjectConfig(projectId int64) error {
 	log.Printf("[GetRoleId] roleId=%+v", config.Id)
 	return nil
 }
+
+// AddConfig 创建配置
+func AddConfig(config Config) (int64, error) {
+	result := DB.Model(&Config{}).Create(&config)
+	if result.Error != nil {
+		log.Printf("[AddConfig] 数据库创建配置失败")
+		return 0, result.Error
+	}
+	return config.Id, nil
+}

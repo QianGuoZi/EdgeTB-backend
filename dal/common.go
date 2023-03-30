@@ -128,7 +128,7 @@ type Node struct {
 	NodeName  string    `json:"link_type,omitempty" gorm:"type:varchar(100)"`
 	CPU       int64     `json:"cpu,omitempty" gorm:"type:int"`
 	RAM       int64     `json:"ram,omitempty" gorm:"type:int"`
-	RoleName  int64     `json:"role_name,omitempty" gorm:"type:varchar(100)"`
+	RoleName  string    `json:"role_name,omitempty" gorm:"type:varchar(100)"`
 	ConfigId  int64     `json:"config_id,omitempty" gorm:"type:int"`
 	CreatedAt time.Time `json:"-" gorm:"index:,sort:desc"`
 }

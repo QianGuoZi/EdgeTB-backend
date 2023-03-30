@@ -20,20 +20,34 @@ type ProjectInfoResponse struct {
 }
 
 type ProjectInfoRequest struct {
-	Controller Controller `json:"controller,omitempty"` // 控制器
-	Dataset    Dataset    `json:"dataset,omitempty"`    // 数据集
+	Controller Controller `json:"controller"` // 控制器
+	Dataset    Dataset    `json:"dataset"`    // 数据集
 }
 
 // Controller 控制器
 type Controller struct {
-	Manager   UploadedFile `json:"manager,omitempty"`   // Manager.py文件信息
-	Structure UploadedFile `json:"structure,omitempty"` // DML结构配置文件信息
+	Manager   UploadedFile `json:"manager"`   // Manager.py文件信息
+	Structure UploadedFile `json:"structure"` // DML结构配置文件信息
 }
 
 // Dataset 数据集
 type Dataset struct {
 	ID       int          `json:"id"`       // 选择的数据集id
 	Splitter UploadedFile `json:"splitter"` // 数据集切分脚本文件信息
+}
+
+type ConfigRequest struct {
+	Nodes          []NodeInfo `json:"nodes"`          // 节点数组
+	Topology       string     `json:"topology"`       // 链路类型
+	BandwidthLower int        `json:"bandwidthLower"` // 带宽下界（包含），单位mbps
+	BandwidthUpper int        `json:"bandwidthUpper"` // 带宽上界（包含），单位mbps
+}
+
+type NodeInfo struct {
+	Name string `json:"name"` // 节点名称
+	CPU  int    `json:"cpu"`  // CPU大小
+	RAM  int    `json:"ram"`  // RAM大小，单位MB
+	Role string `json:"role"` // 角色名称
 }
 
 // AddProject 添加项目
@@ -62,13 +76,13 @@ func GetAllProject(username string) ([]ProjectListResponse, error) {
 	//通过username获取id
 	userId, err := dal.GetUserId(username)
 	if err != nil {
-		log.Printf("[AddProject] 服务获取用户id失败")
+		log.Printf("[GetAllProject] 服务获取用户id失败")
 		return list, errors.New("服务获取用户id失败")
 	}
 	projectList, err1 := dal.GetAllProject(userId)
 	if err1 != nil {
-		log.Printf("[GetAllRole] 服务获取用户角色列表失败")
-		return list, errors.New("服务获取用户角色列表失败")
+		log.Printf("[GetAllProject] 服务获取项目列表失败")
+		return list, errors.New("服务获取项目列表失败")
 	}
 	listLen := len(projectList)
 	responseList := make([]ProjectListResponse, listLen)
@@ -84,7 +98,7 @@ func GetProjectDetail(username, projectName string) (ProjectInfoResponse, error)
 	//通过username获取id
 	userId, err := dal.GetUserId(username)
 	if err != nil {
-		log.Printf("[AddProject] 服务获取用户id失败")
+		log.Printf("[GetProjectDetail] 服务获取用户id失败")
 		return projectResponse, errors.New("服务获取用户id失败")
 	}
 	projectInfo, err1 := dal.GetProjectInfo(userId, projectName)
@@ -110,10 +124,6 @@ func GetProjectDetail(username, projectName string) (ProjectInfoResponse, error)
 	} else {
 		managerFileInfo, _ := GetFileInfo(projectInfo.ManagerFileId)
 		projectResponse.Controller.Manager = managerFileInfo
-		//projectResponse.Controller.Manager = new(UploadedFile)
-		//projectResponse.Controller.Manager.URL = managerFileInfo.URL
-		//projectResponse.Controller.Manager.FileName = managerFileInfo.FileName
-		//projectResponse.Controller.Manager.Size = managerFileInfo.Size
 	}
 	//structure文件信息
 	if projectInfo.StructureFileId == 0 {
@@ -121,10 +131,6 @@ func GetProjectDetail(username, projectName string) (ProjectInfoResponse, error)
 	} else {
 		structureFileInfo, _ := GetFileInfo(projectInfo.StructureFileId)
 		projectResponse.Controller.Structure = structureFileInfo
-		//projectResponse.Controller.Structure = new(UploadedFile)
-		//projectResponse.Controller.Structure.URL = structureFileInfo.URL
-		//projectResponse.Controller.Structure.FileName = structureFileInfo.FileName
-		//projectResponse.Controller.Structure.Size = structureFileInfo.Size
 	}
 	//dataset
 	projectResponse.Dataset = new(Dataset)
@@ -140,10 +146,6 @@ func GetProjectDetail(username, projectName string) (ProjectInfoResponse, error)
 	} else {
 		datasetSplitterFileInfo, _ := GetFileInfo(projectInfo.DatasetSplitterFileId)
 		projectResponse.Dataset.Splitter = datasetSplitterFileInfo
-		//projectResponse.Dataset.Splitter = new(UploadedFile)
-		//projectResponse.Dataset.Splitter.URL = datasetSplitterFileInfo.URL
-		//projectResponse.Dataset.Splitter.FileName = datasetSplitterFileInfo.FileName
-		//projectResponse.Dataset.Splitter.Size = datasetSplitterFileInfo.Size
 	}
 	return projectResponse, nil
 }
@@ -236,4 +238,40 @@ func UploadDatasetSplitter(filePath string) (string, string, int, error) {
 	fmt.Println("name:", fi.Name())
 	fmt.Println("size:", fi.Size())
 	return filePath, fi.Name(), int(fi.Size()), nil
+}
+
+func AddProjectConfig(username, projectName string, configInfo ConfigRequest) error {
+	//通过username获取id
+	userId, err := dal.GetUserId(username)
+	if err != nil {
+		log.Printf("[AddProjectConfig] 服务获取用户id失败")
+		return errors.New("服务获取用户id失败")
+	}
+	projectId, err1 := dal.GetProjectId(projectName, userId)
+	if err1 != nil {
+		log.Printf("[AddProjectConfig] 服务获取项目id失败")
+		return errors.New("服务获取项目id失败")
+	}
+	//创建config
+	var config dal.Config
+	config.LinkType = configInfo.Topology
+	config.BandwidthUpper = int64(configInfo.BandwidthUpper)
+	config.BandwidthLower = int64(configInfo.BandwidthLower)
+	config.ProjectId = projectId
+	configId, err2 := dal.AddConfig(config)
+	if err2 != nil {
+		log.Printf("[AddProjectConfig] 服务创建配置失败")
+		return errors.New("服务创建配置失败")
+	}
+	//创建node
+	nodeLen := len(configInfo.Nodes)
+	var node dal.Node
+	for i := 0; i < nodeLen; i++ {
+		node.ConfigId = configId
+		node.NodeName = configInfo.Nodes[i].Name
+		node.CPU = int64(configInfo.Nodes[i].CPU)
+		node.RAM = int64(configInfo.Nodes[i].RAM)
+		node.RoleName = configInfo.Nodes[i].Role
+	}
+	return nil
 }
