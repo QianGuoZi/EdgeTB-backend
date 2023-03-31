@@ -132,6 +132,9 @@ func StartTask(c *gin.Context) {
 		return
 	}
 
+	task.Status = dal.TaskStatusRunning
+	dal.DB.Save(&task)
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "启动任务成功",

@@ -25,3 +25,13 @@ func AddTask(task Task) (int64, error) {
 	}
 	return task.Id, nil
 }
+
+func SetProjectRunningTaskStatus(projectId int64, status string) error {
+	result := DB.Model(&Task{}).
+		Where("project_id = ? && status = ?", projectId, TaskStatusRunning).
+		Update("status", status).Limit(1)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}

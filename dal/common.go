@@ -141,8 +141,16 @@ type Log struct {
 	CreatedAt time.Time `json:"-" gorm:"index:,sort:desc"`
 }
 
+const (
+	TaskStatusCreated   = "created"
+	TaskStatusRunning   = "running"
+	TaskStatusCompleted = "completed"
+	TaskStatusStopped   = "stopped"
+)
+
 type Task struct {
 	Id                    int64     `json:"id,omitempty" gorm:"primaryKey"`
+	Status                string    `json:"status,omitempty" gorm:"type:varchar(100)"`
 	ProjectId             int64     `json:"project_id,omitempty" gorm:"foreignKey"`
 	DatasetId             int64     `json:"dataset_id,omitempty" gorm:"foreignKey"`
 	DatasetSplitterFileId int64     `json:"dataset_splitter_file_id,omitempty" gorm:"type:int"`
