@@ -15,13 +15,26 @@ func main() {
 	//初始化数据库
 	dal.InitDB()
 
+	// {
+	// 	d1 := dal.Dataset{
+	// 		State:       0,
+	// 		DatasetName: "d1",
+	// 		Type:        "text",
+	// 		Description: "d1",
+	// 		FileName:    "d1",
+	// 		Size:        114514,
+	// 		Url:         "https://www.baidu.com",
+	// 	}
+	// 	dal.DB.Save(&d1)
+	// }
+
 	r := gin.Default()
 	r.Use(Cors())
 
 	//初始化路由
 	initRouter(r)
 
-	err := r.Run(":3000") // http端口
+	err := r.Run("127.0.0.1:3000") // http端口
 	if err != nil {
 		panic(err)
 	}
