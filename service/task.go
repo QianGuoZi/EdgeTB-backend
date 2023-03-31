@@ -9,7 +9,8 @@ type GetAllTaskResponse struct {
 	ID          int64  `json:"id"`
 	DatasetName string `json:"datasetName"`
 	ConfigId    int64  `json:"configId"`
-	CreatedAt   string `json:"createAt"`
+	Status      string `json:"status"`
+	CreatedAt   string `json:"createdAt"`
 }
 
 func GetAllTask(username, projectName string) ([]GetAllTaskResponse, error) {
@@ -43,6 +44,7 @@ func GetAllTask(username, projectName string) ([]GetAllTaskResponse, error) {
 			ID:          task.Id,
 			DatasetName: dataset.DatasetName,
 			ConfigId:    task.ConfigId,
+			Status:      task.Status,
 			CreatedAt:   task.CreatedAt.Format("2006-01-02 15:04:05"),
 		})
 	}
@@ -82,6 +84,7 @@ func AddTask(username, projectName string, req AddTaskRequest) (int64, error) {
 
 	// 创建任务
 	taskId, err := dal.AddTask(dal.Task{
+		Status:                dal.TaskStatusCreated,
 		DatasetId:             req.DatasetId,
 		DatasetSplitterFileId: fileId,
 		ConfigId:              req.ConfigId,
