@@ -140,3 +140,12 @@ type Log struct {
 	ProjectId int64     `json:"project_id,omitempty" gorm:"type:int"`
 	CreatedAt time.Time `json:"-" gorm:"index:,sort:desc"`
 }
+
+type Task struct {
+	Id                    int64     `json:"id,omitempty" gorm:"primaryKey"`
+	ProjectId             int64     `json:"project_id,omitempty" gorm:"foreignKey"`
+	DatasetId             int64     `json:"dataset_id,omitempty" gorm:"foreignKey"`
+	DatasetSplitterFileId int64     `json:"dataset_splitter_file_id,omitempty" gorm:"type:int"`
+	ConfigId              int64     `json:"config_id,omitempty" gorm:"foreignKey"`
+	CreatedAt             time.Time `json:"-" gorm:"index:,sort:desc"`
+}

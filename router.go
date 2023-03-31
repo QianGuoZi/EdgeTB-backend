@@ -58,4 +58,10 @@ func initRouter(r *gin.Engine) {
 		apiRouter.POST("/project/:name/structure_conf", handler.UploadStructure)
 		apiRouter.POST("/project/:name/dataset_conf", handler.UploadDatasetSplitter)
 	}
+
+	{
+		apiRouter.POST("/task", handler.AddTask)
+		apiRouter.GET("/task", handler.GetAllTasks)
+		apiRouter.POST("/task/:id/start", handler.StartTask)
+	}
 }

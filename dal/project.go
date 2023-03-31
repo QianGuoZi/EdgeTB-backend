@@ -52,6 +52,17 @@ func GetProjectInfo(userId int64, projectName string) (Project, error) {
 	return projectInfo, nil
 }
 
+func GetProjectInfoById(projectId int64) (Project, error) {
+	var projectInfo Project
+	result := DB.Model(&Project{}).Where("id = ?", projectId).First(&projectInfo)
+	if result.Error != nil {
+		log.Printf("[GetProjectInfoById] 数据库获取项目信息失败")
+		return projectInfo, result.Error
+	}
+	log.Printf("[GetProjectInfoById] 数据库获取项目信息成功")
+	return projectInfo, nil
+}
+
 // UpdateProjectInfo 更新项目信息
 func UpdateProjectInfo(projectId, managerId, structureId, datasetId, datasetSplitterId int64) error {
 	result := DB.Model(&Project{}).Where("id = ?", projectId).
