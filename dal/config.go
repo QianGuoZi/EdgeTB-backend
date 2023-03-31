@@ -25,3 +25,30 @@ func AddConfig(config Config) (int64, error) {
 	}
 	return config.Id, nil
 }
+
+func GetAllConfig(projectId int64) ([]Config, error) {
+	var configs []Config
+	result := DB.Model(&Config{}).Where("project_id = ?", projectId).Find(&configs)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return configs, nil
+}
+
+func GetConfigNodes(configId int64) ([]Node, error) {
+	var nodeGroups []Node
+	result := DB.Model(&Node{}).Where("config_id = ?", configId).Find(&nodeGroups)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return nodeGroups, nil
+}
+
+func GetConfigNodeCount(configId int64) (int64, error) {
+	var count int64
+	result := DB.Model(&Node{}).Where("config_id = ?", configId).Count(&count)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	return count, nil
+}

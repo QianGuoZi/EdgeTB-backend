@@ -434,6 +434,34 @@ func AddProjectConfig(c *gin.Context) {
 	return
 }
 
+func GetProjectConfigs(c *gin.Context) {
+	//获取项目配置
+	username, err := service.GetUsername(c)
+	if err != nil {
+		log.Printf("[GetUserInfo] failed err=%+v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "token有误",
+		})
+		return
+	}
+	projectName := c.Param("name")
+	log.Printf("[GetProjectDetail] projectName=%+v", projectName)
+	configs, err := service.GetProjectConfigs(username, projectName)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "项目配置获取失败",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "项目配置获取成功",
+		"data":    configs,
+	})
+}
+
 // StartProject 运行项目
 func StartProject(c *gin.Context) {
 	//通过用户id添加项目配置

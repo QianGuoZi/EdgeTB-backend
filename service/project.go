@@ -293,3 +293,46 @@ func FinishProject(username, projectName string) error {
 	log.Printf(username, projectName)
 	return nil
 }
+
+type ConfigResponse struct {
+	Id        int64  `json:"id"`
+	Topology  string `json:"topology"`
+	NodeCount int    `json:"nodeCount"`
+	CreatedAt string `json:"createdAt"`
+}
+
+func GetProjectConfigs(username, projectName string) ([]ConfigResponse, error) {
+	//通过username获取id
+	userId, err := dal.GetUserId(username)
+	if err != nil {
+		log.Printf("[GetProjectConfigs] 服务获取用户id失败")
+		return nil, errors.New("服务获取用户id失败")
+	}
+	projectId, err1 := dal.GetProjectId(projectName, userId)
+	if err1 != nil {
+		log.Printf("[GetProjectConfigs] 服务获取项目id失败")
+		return nil, errors.New("服务获取项目id失败")
+	}
+	//获取config
+	configs, err2 := dal.GetAllConfig(projectId)
+	if err2 != nil {
+		log.Printf("[GetProjectConfigs] 服务获取配置失败")
+		return nil, errors.New("服务获取配置失败")
+	}
+	//获取node
+	var configResponses []ConfigResponse
+	for _, config := range configs {
+		var configResponse ConfigResponse
+		configResponse.Id = config.Id
+		configResponse.Topology = config.LinkType
+		configResponse.CreatedAt = config.CreatedAt.Format("2006-01-02 15:04:05")
+		nodeCount, err := dal.GetConfigNodeCount(config.Id)
+		if err != nil {
+			log.Printf("[GetProjectConfigs] 服务获取节点数量失败")
+			return nil, errors.New("服务获取节点数量失败")
+		}
+		configResponse.NodeCount = int(nodeCount)
+		configResponses = append(configResponses, configResponse)
+	}
+	return configResponses, nil
+}
