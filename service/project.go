@@ -240,6 +240,7 @@ func UploadDatasetSplitter(filePath string) (string, string, int, error) {
 	return filePath, fi.Name(), int(fi.Size()), nil
 }
 
+// AddProjectConfig 添加项目配置
 func AddProjectConfig(username, projectName string, configInfo ConfigRequest) error {
 	//通过username获取id
 	userId, err := dal.GetUserId(username)
@@ -272,6 +273,23 @@ func AddProjectConfig(username, projectName string, configInfo ConfigRequest) er
 		node.CPU = int64(configInfo.Nodes[i].CPU)
 		node.RAM = int64(configInfo.Nodes[i].RAM)
 		node.RoleName = configInfo.Nodes[i].Role
+		_, err3 := dal.AddNode(node)
+		if err3 != nil {
+			log.Printf("[AddProjectConfig] 服务创建节点配置失败")
+			return errors.New("服务创建节点配置失败")
+		}
 	}
+	return nil
+}
+
+// StartProject 运行项目
+func StartProject(username, projectName string) error {
+	log.Printf(username, projectName)
+	return nil
+}
+
+// FinishProject 终止项目
+func FinishProject(username, projectName string) error {
+	log.Printf(username, projectName)
 	return nil
 }

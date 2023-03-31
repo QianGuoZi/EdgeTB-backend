@@ -136,7 +136,7 @@ type Node struct {
 type Log struct {
 	Id        int64     `json:"id,omitempty" gorm:"primaryKey"`
 	NodeName  string    `json:"node_name,omitempty" gorm:"type:varchar(100)"`
-	Content   int64     `json:"content,omitempty" gorm:"type:varchar(1000)"`
+	Content   string    `json:"content,omitempty" gorm:"type:varchar(1000)"`
 	ProjectId int64     `json:"project_id,omitempty" gorm:"type:int"`
 	CreatedAt time.Time `json:"-" gorm:"index:,sort:desc"`
 }

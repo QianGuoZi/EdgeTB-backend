@@ -57,5 +57,14 @@ func initRouter(r *gin.Engine) {
 		apiRouter.POST("/project/:name/manager", handler.UploadManager)
 		apiRouter.POST("/project/:name/structure_conf", handler.UploadStructure)
 		apiRouter.POST("/project/:name/dataset_conf", handler.UploadDatasetSplitter)
+		apiRouter.POST("/project/:name/config", handler.AddProjectConfig)
+		apiRouter.GET("/project/:name/start", handler.StartProject)
+		apiRouter.GET("/project/:name/finish", handler.FinishProject)
+	}
+
+	//日志 apis
+	{
+		apiRouter.POST("/log", handler.AddLog)
+		apiRouter.GET("/log", handler.AllLog)
 	}
 }
