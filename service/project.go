@@ -21,7 +21,7 @@ type ProjectInfoResponse struct {
 
 type ProjectInfoRequest struct {
 	Controller Controller `json:"controller"` // 控制器
-	Dataset    Dataset    `json:"dataset"`    // 数据集
+	// Dataset    Dataset    `json:"dataset"`    // 数据集
 }
 
 // Controller 控制器
@@ -184,19 +184,20 @@ func AddProjectDetail(username, projectName string, projectInfo ProjectInfoReque
 		log.Printf("[AddProjectDetail] 服务添加structure文件信息失败")
 		return errors.New("服务添加structure文件信息失败")
 	}
-	//dataset 信息添加
-	//datasetSplitter
-	var datasetSplitterFile dal.File
-	datasetSplitterFile.Name = projectInfo.Dataset.Splitter.FileName
-	datasetSplitterFile.Url = projectInfo.Dataset.Splitter.URL
-	datasetSplitterFile.Size = projectInfo.Dataset.Splitter.Size
-	datasetSplitterId, err3 := dal.AddFile(datasetSplitterFile)
-	if err3 != nil {
-		log.Printf("[AddProjectDetail] 服务添加datasetSplitter文件信息失败")
-		return errors.New("服务添加datasetSplitter文件信息失败")
-	}
-	//存储4个id
-	err = dal.UpdateProjectInfo(projectId, managerId, structureId, int64(projectInfo.Dataset.ID), datasetSplitterId)
+	// //dataset 信息添加
+	// //datasetSplitter
+	// var datasetSplitterFile dal.File
+	// datasetSplitterFile.Name = projectInfo.Dataset.Splitter.FileName
+	// datasetSplitterFile.Url = projectInfo.Dataset.Splitter.URL
+	// datasetSplitterFile.Size = projectInfo.Dataset.Splitter.Size
+	// datasetSplitterId, err3 := dal.AddFile(datasetSplitterFile)
+	// if err3 != nil {
+	// 	log.Printf("[AddProjectDetail] 服务添加datasetSplitter文件信息失败")
+	// 	return errors.New("服务添加datasetSplitter文件信息失败")
+	// }
+	// //存储4个id
+	// err = dal.UpdateProjectInfo(projectId, managerId, structureId, int64(projectInfo.Dataset.ID), datasetSplitterId)
+	err = dal.UpdateProjectInfo(projectId, managerId, structureId, 0, 0)
 	if err != nil {
 		log.Printf("[AddProjectDetail] 服务添加项目信息失败")
 		return errors.New("服务添加项目信息失败")
