@@ -75,4 +75,10 @@ func initRouter(r *gin.Engine) {
 		apiRouter.GET("/task", handler.GetAllTasks)
 		apiRouter.POST("/task/:id/start", handler.StartTask)
 	}
+
+	{
+		apiRouter.POST("/task", handler.AddTask)
+		apiRouter.GET("/task", handler.GetAllTasks)
+		apiRouter.POST("/task/:id/start", handler.StartTask)
+	}
 }
