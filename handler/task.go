@@ -24,8 +24,9 @@ func GetAllTasks(c *gin.Context) {
 		return
 	}
 	log.Printf("[GetUserInfo] success username=%+v", username)
-
-	projectName := c.Query("project")
+	
+	projectName, _ := c.GetQuery("project")
+	log.Printf("[AddTask] projectName=%+v", projectName)
 
 	tasks, err := service.GetAllTask(username, projectName)
 	if err != nil {
@@ -56,10 +57,12 @@ func AddTask(c *gin.Context) {
 	}
 	log.Printf("[GetUserInfo] success username=%+v", username)
 
-	projectName := c.Query("project")
+	projectName, _ := c.GetQuery("project")
+	log.Printf("[AddTask] projectName=%+v", projectName)
 
 	var newTask service.AddTaskRequest
 	err = c.ShouldBind(&newTask)
+	log.Print(newTask)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,

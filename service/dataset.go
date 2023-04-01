@@ -67,7 +67,7 @@ func AddDatasetByUpload(setName string, description string, setType string, sour
 	dataSet.DatasetName = setName
 	dataSet.Description = description
 	dataSet.Type = setType
-	dataSet.State = 1 //0为公开数据集，1为私有状态
+	dataSet.State = 0 //0为公开数据集，1为私有状态
 	dataSet.Source = source
 	dataSet.Url = url
 	dataSet.FileName = fileName

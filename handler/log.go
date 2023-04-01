@@ -22,6 +22,7 @@ func AllLog(c *gin.Context) {
 	//获取项目名称
 	projectName, _ := c.GetQuery("project")
 	log.Printf("[AllLog] projectName=%+v", projectName)
+
 	returnData, err1 := service.AllLog(username, projectName)
 	if err1 != nil {
 		c.JSON(http.StatusOK, gin.H{
