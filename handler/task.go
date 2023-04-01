@@ -115,6 +115,22 @@ func StartTask(c *gin.Context) {
 		return
 	}
 
+	if has, err := dal.CheckIfProjectHasRunningTask(task.ProjectId); err == nil {
+		if has {
+			c.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "项目已有任务在运行",
+			})
+			return
+		}
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "获取项目任务失败",
+		})
+		return
+	}
+
 	// 奇技淫巧！！
 	// 任务运行将会修改项目的dataset_id和dataset_splitter_file_id
 	// 然后就交给项目自己的运行了

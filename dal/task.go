@@ -1,5 +1,11 @@
 package dal
 
+import (
+	"errors"
+
+	"gorm.io/gorm"
+)
+
 func GetAllTask(projectId int64) ([]Task, error) {
 	var tasks []Task
 	result := DB.Model(&Task{}).Where("project_id = ?", projectId).Find(&tasks)
@@ -24,6 +30,17 @@ func AddTask(task Task) (int64, error) {
 		return 0, result.Error
 	}
 	return task.Id, nil
+}
+
+func CheckIfProjectHasRunningTask(projectId int64) (bool, error) {
+	result := DB.Model(&Task{}).Where("project_id = ? && status = ?", projectId, TaskStatusRunning).First(&Task{})
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, result.Error
+	}
+	return true, nil
 }
 
 func SetProjectRunningTaskStatus(projectId int64, status string) error {
