@@ -6,11 +6,12 @@ import (
 )
 
 type GetAllTaskResponse struct {
-	ID          int64  `json:"id"`
-	DatasetName string `json:"datasetName"`
-	ConfigId    int64  `json:"configId"`
-	Status      string `json:"status"`
-	CreatedAt   string `json:"createdAt"`
+	ID          int64   `json:"id"`
+	DatasetName string  `json:"datasetName"`
+	ConfigId    int64   `json:"configId"`
+	Status      string  `json:"status"`
+	CreatedAt   string  `json:"createdAt"`
+	StartAt     *string `json:"startAt"`
 }
 
 func GetAllTask(username, projectName string) ([]GetAllTaskResponse, error) {
@@ -40,13 +41,18 @@ func GetAllTask(username, projectName string) ([]GetAllTaskResponse, error) {
 			log.Printf("[GetAllTask] 服务获取数据集名称失败")
 			return nil, err
 		}
-		res = append(res, GetAllTaskResponse{
+		resp := GetAllTaskResponse{
 			ID:          task.Id,
 			DatasetName: dataset.DatasetName,
 			ConfigId:    task.ConfigId,
 			Status:      task.Status,
 			CreatedAt:   task.CreatedAt.Format("2006-01-02 15:04:05"),
-		})
+		}
+		if task.StartAt != nil {
+			startAt := task.StartAt.Format("2006-01-02 15:04:05")
+			resp.StartAt = &startAt
+		}
+		res = append(res, resp)
 	}
 
 	return res, nil
