@@ -3,16 +3,16 @@ package service
 import (
 	"EdgeTB-backend/dal"
 	"errors"
-	"github.com/spf13/viper"
+	"fmt"
 	"log"
 	"os"
+
+	"github.com/spf13/viper"
 )
 
 type ConfigRequest struct {
-	Nodes          []NodeInfo `json:"nodes"`          // 节点数组
-	Topology       string     `json:"topology"`       // 链路类型
-	BandwidthLower int        `json:"bandwidthLower"` // 带宽下界（包含），单位mbps
-	BandwidthUpper int        `json:"bandwidthUpper"` // 带宽上界（包含），单位mbps
+	Nodes []NodeInfo                `json:"nodes"` // 节点数组
+	Links map[string]map[string]int `json:"links"` // 链路，source->target->bandwidth(单位mbps)
 }
 
 type NodeInfo struct {
@@ -37,9 +37,6 @@ func AddProjectConfig(username, projectName string, configInfo ConfigRequest) er
 	}
 	//创建config
 	var config dal.Config
-	config.LinkType = configInfo.Topology
-	config.BandwidthUpper = int64(configInfo.BandwidthUpper)
-	config.BandwidthLower = int64(configInfo.BandwidthLower)
 	config.ProjectId = projectId
 	configId, err2 := dal.AddConfig(config)
 	if err2 != nil {
@@ -61,14 +58,32 @@ func AddProjectConfig(username, projectName string, configInfo ConfigRequest) er
 			return errors.New("服务创建节点配置失败")
 		}
 	}
+	//创建link
+	links := make([]dal.Link, 0)
+	for source, target := range configInfo.Links {
+		for targetName, bandwidth := range target {
+			vlink := dal.Link{
+				ConfigId:       configId,
+				SourceNodeName: source,
+				TargetNodeName: targetName,
+				Bandwidth:      bandwidth,
+			}
+			links = append(links, vlink)
+		}
+	}
+	_, err = dal.AddLinks(links)
+	if err != nil {
+		log.Printf("[AddProjectConfig] 服务创建link失败")
+		return errors.New("服务创建link失败")
+	}
 	return nil
 }
 
 type ConfigResponse struct {
-	Id        int64  `json:"id"`
-	Topology  string `json:"topology"`
-	NodeCount int    `json:"nodeCount"`
-	CreatedAt string `json:"createdAt"`
+	Id        int64                     `json:"id"`
+	NodeCount int                       `json:"nodeCount"`
+	Links     map[string]map[string]int `json:"links"`
+	CreatedAt string                    `json:"createdAt"`
 }
 
 // GetProjectConfigList 获取项目的配置
@@ -90,13 +105,19 @@ func GetProjectConfigList(username, projectName string) ([]ConfigResponse, error
 		log.Printf("[GetProjectConfigList] 服务获取配置失败")
 		return nil, errors.New("服务获取配置失败")
 	}
-	//获取node
 	var configResponses []ConfigResponse
 	for _, config := range configs {
 		var configResponse ConfigResponse
 		configResponse.Id = config.Id
-		configResponse.Topology = config.LinkType
 		configResponse.CreatedAt = config.CreatedAt.Format("2006-01-02 15:04:05")
+		//获取link
+		links, err := dal.GetAllLinks(config.Id)
+		if err != nil {
+			log.Printf("[GetProjectConfigList] 服务获取link失败")
+			return nil, errors.New("服务获取link失败")
+		}
+		configResponse.Links = ConvertLinkArrayToMap(links)
+		//获取node
 		nodeCount, err := dal.GetConfigNodeCount(config.Id)
 		if err != nil {
 			log.Printf("[GetProjectConfigList] 服务获取节点数量失败")
@@ -113,11 +134,7 @@ type ConfigYamlStruct struct {
 	Deployment ConfigYamlDeployment `yaml:"deployment"`
 }
 
-type ConfigYamlLink struct {
-	Type           string `yaml:"type"`
-	BandwidthUpper int    `yaml:"bandwidthUpper"`
-	BandwidthLower int    `yaml:"bandwidthLower"`
-}
+type ConfigYamlLink map[string]map[string]string // source->target->bandwidthmbps
 
 type ConfigYamlDeployment struct {
 	Emulated map[string]ConfigYamlNode `yaml:"emulated"`
@@ -147,10 +164,18 @@ func CreateConfigYaml(username, projectName string) error {
 		log.Printf("[CreateConfigYaml] 服务获取项目配置信息失败")
 		return errors.New("服务获取项目配置信息失败")
 	}
-	configYamlLink := ConfigYamlLink{
-		Type:           configInfo.LinkType,
-		BandwidthUpper: int(configInfo.BandwidthUpper),
-		BandwidthLower: int(configInfo.BandwidthLower),
+	links, err3 := dal.GetAllLinks(configInfo.Id)
+	if err3 != nil {
+		log.Printf("[CreateConfigYaml] 服务获取项目配置link信息失败")
+		return errors.New("服务获取项目配置link信息失败")
+	}
+
+	configYamlLink := make(ConfigYamlLink)
+	for source, target := range ConvertLinkArrayToMap(links) {
+		configYamlLink[source] = make(map[string]string)
+		for targetName, bandwidth := range target {
+			configYamlLink[source][targetName] = fmt.Sprintf("%dmbps", bandwidth)
+		}
 	}
 	configYamlNode := make(map[string]ConfigYamlNode)
 	emulatedNodeList, err3 := dal.GetConfigNodes(configInfo.Id)
@@ -181,7 +206,7 @@ func CreateConfigYaml(username, projectName string) error {
 	return nil
 }
 
-//GenerateYaml 生成yaml文件 yamlFile：文件路径 key：yaml 的key value: yaml 的value
+// GenerateYaml 生成yaml文件 yamlFile：文件路径 key：yaml 的key value: yaml 的value
 func GenerateYaml(yamlFile, key string, value interface{}) error {
 	filename := yamlFile
 	var viperObj = viper.New()
@@ -192,4 +217,15 @@ func GenerateYaml(yamlFile, key string, value interface{}) error {
 	}
 	viperObj.Set(key, value)
 	return viperObj.WriteConfig()
+}
+
+func ConvertLinkArrayToMap(links []dal.Link) map[string]map[string]int {
+	linkMap := make(map[string]map[string]int)
+	for _, link := range links {
+		if _, ok := linkMap[link.SourceNodeName]; !ok {
+			linkMap[link.SourceNodeName] = make(map[string]int)
+		}
+		linkMap[link.SourceNodeName][link.TargetNodeName] = link.Bandwidth
+	}
+	return linkMap
 }
