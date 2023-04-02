@@ -17,6 +17,18 @@ func GetProjectId(projectName string, userId int64) (int64, error) {
 	return project.Id, nil
 }
 
+// GetProjectIdByName 仅用项目名称获取项目id
+func GetProjectIdByName(projectName string) (int64, error) {
+	project := Project{}
+	DB.Model(&Project{}).Where("project_name = ? ", projectName).First(&project)
+	if project.Id == 0 {
+		log.Printf("[GetProjectId] 无法找到该项目")
+		return 0, errors.New("无法找到该项目")
+	}
+	log.Printf("[GetProjectId] projectId=%+v", project.Id)
+	return project.Id, nil
+}
+
 // AddProject 添加项目信息
 func AddProject(project Project) (int64, error) {
 	result := DB.Model(&Project{}).Create(&project)

@@ -26,6 +26,16 @@ func AddConfig(config Config) (int64, error) {
 	return config.Id, nil
 }
 
+// GetConfigInfo 获取配置信息
+func GetConfigInfo(projectId int64) (Config, error) {
+	var config Config
+	result := DB.Model(&Config{}).Where("project_id = ?", projectId).First(&config)
+	if result.Error != nil {
+		return config, result.Error
+	}
+	return config, nil
+}
+
 func GetAllConfig(projectId int64) ([]Config, error) {
 	var configs []Config
 	result := DB.Model(&Config{}).Where("project_id = ?", projectId).Find(&configs)

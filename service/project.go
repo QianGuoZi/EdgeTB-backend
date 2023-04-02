@@ -36,20 +36,6 @@ type Dataset struct {
 	Splitter UploadedFile `json:"splitter"` // 数据集切分脚本文件信息
 }
 
-type ConfigRequest struct {
-	Nodes          []NodeInfo `json:"nodes"`          // 节点数组
-	Topology       string     `json:"topology"`       // 链路类型
-	BandwidthLower int        `json:"bandwidthLower"` // 带宽下界（包含），单位mbps
-	BandwidthUpper int        `json:"bandwidthUpper"` // 带宽上界（包含），单位mbps
-}
-
-type NodeInfo struct {
-	Name string `json:"name"` // 节点名称
-	CPU  int    `json:"cpu"`  // CPU大小
-	RAM  int    `json:"ram"`  // RAM大小，单位MB
-	Role string `json:"role"` // 角色名称
-}
-
 // AddProject 添加项目
 func AddProject(username, projectName string) error {
 	//通过username获取id
@@ -241,99 +227,33 @@ func UploadDatasetSplitter(filePath string) (string, string, int, error) {
 	return filePath, fi.Name(), int(fi.Size()), nil
 }
 
-// AddProjectConfig 添加项目配置
-func AddProjectConfig(username, projectName string, configInfo ConfigRequest) error {
-	//通过username获取id
-	userId, err := dal.GetUserId(username)
-	if err != nil {
-		log.Printf("[AddProjectConfig] 服务获取用户id失败")
-		return errors.New("服务获取用户id失败")
-	}
-	projectId, err1 := dal.GetProjectId(projectName, userId)
-	if err1 != nil {
-		log.Printf("[AddProjectConfig] 服务获取项目id失败")
-		return errors.New("服务获取项目id失败")
-	}
-	//创建config
-	var config dal.Config
-	config.LinkType = configInfo.Topology
-	config.BandwidthUpper = int64(configInfo.BandwidthUpper)
-	config.BandwidthLower = int64(configInfo.BandwidthLower)
-	config.ProjectId = projectId
-	configId, err2 := dal.AddConfig(config)
-	if err2 != nil {
-		log.Printf("[AddProjectConfig] 服务创建配置失败")
-		return errors.New("服务创建配置失败")
-	}
-	//创建node
-	nodeLen := len(configInfo.Nodes)
-	var node dal.Node
-	for i := 0; i < nodeLen; i++ {
-		node.ConfigId = configId
-		node.NodeName = configInfo.Nodes[i].Name
-		node.CPU = int64(configInfo.Nodes[i].CPU)
-		node.RAM = int64(configInfo.Nodes[i].RAM)
-		node.RoleName = configInfo.Nodes[i].Role
-		_, err3 := dal.AddNode(node)
-		if err3 != nil {
-			log.Printf("[AddProjectConfig] 服务创建节点配置失败")
-			return errors.New("服务创建节点配置失败")
-		}
-	}
-	return nil
-}
-
 // StartProject 运行项目
 func StartProject(username, projectName string) error {
-	log.Printf(username, projectName)
+	//创建yaml文件
+	err := CreateConfigYaml(username, projectName)
+	if err != nil {
+		return err
+	}
 	return nil
+	//role文件
+	//TODO:装模做样？
+	//manager文件
+	//文件位置./ProjectFile/Manager
+	//数据集切分脚本文件
+	//文件位置./ProjectFile/DatasetSplitter
+	//os执行python3 dataset_conf.py -d dataset.json
+	//DML结构配置脚本文件
+	//文件位置./ProjectFile/Structure
+	//os执行python3 gl_structure_conf.py -s structure.json
+	//curl localhost:3333/conf/dataset
+	//curl localhost:3333/conf/structure
+	//log接收到tc finish后
+	//curl localhost:3333/start
 }
 
 // FinishProject 终止项目
 func FinishProject(username, projectName string) error {
+	//curl localhost:3333/finish
 	log.Printf(username, projectName)
 	return nil
-}
-
-type ConfigResponse struct {
-	Id        int64  `json:"id"`
-	Topology  string `json:"topology"`
-	NodeCount int    `json:"nodeCount"`
-	CreatedAt string `json:"createdAt"`
-}
-
-func GetProjectConfigs(username, projectName string) ([]ConfigResponse, error) {
-	//通过username获取id
-	userId, err := dal.GetUserId(username)
-	if err != nil {
-		log.Printf("[GetProjectConfigs] 服务获取用户id失败")
-		return nil, errors.New("服务获取用户id失败")
-	}
-	projectId, err1 := dal.GetProjectId(projectName, userId)
-	if err1 != nil {
-		log.Printf("[GetProjectConfigs] 服务获取项目id失败")
-		return nil, errors.New("服务获取项目id失败")
-	}
-	//获取config
-	configs, err2 := dal.GetAllConfig(projectId)
-	if err2 != nil {
-		log.Printf("[GetProjectConfigs] 服务获取配置失败")
-		return nil, errors.New("服务获取配置失败")
-	}
-	//获取node
-	var configResponses []ConfigResponse
-	for _, config := range configs {
-		var configResponse ConfigResponse
-		configResponse.Id = config.Id
-		configResponse.Topology = config.LinkType
-		configResponse.CreatedAt = config.CreatedAt.Format("2006-01-02 15:04:05")
-		nodeCount, err := dal.GetConfigNodeCount(config.Id)
-		if err != nil {
-			log.Printf("[GetProjectConfigs] 服务获取节点数量失败")
-			return nil, errors.New("服务获取节点数量失败")
-		}
-		configResponse.NodeCount = int(nodeCount)
-		configResponses = append(configResponses, configResponse)
-	}
-	return configResponses, nil
 }

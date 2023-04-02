@@ -17,14 +17,8 @@ type LogList struct {
 	CreatedAt string `json:"createdAt"` // 日志创建时间
 }
 
-func AddLog(username, projectName string, logRequest LogRequest) error {
-	//通过username获取id
-	userId, err := dal.GetUserId(username)
-	if err != nil {
-		log.Printf("[AddLog] 服务获取用户id失败")
-		return errors.New("服务获取用户id失败")
-	}
-	projectId, err1 := dal.GetProjectId(projectName, userId)
+func AddLog(projectName string, logRequest LogRequest) error {
+	projectId, err1 := dal.GetProjectIdByName(projectName)
 	if err1 != nil {
 		log.Printf("[AddLog] 服务获取项目id失败")
 		return errors.New("服务获取项目id失败")

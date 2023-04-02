@@ -447,7 +447,7 @@ func GetProjectConfigs(c *gin.Context) {
 	}
 	projectName := c.Param("name")
 	log.Printf("[GetProjectDetail] projectName=%+v", projectName)
-	configs, err := service.GetProjectConfigs(username, projectName)
+	configs, err := service.GetProjectConfigList(username, projectName)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,

@@ -41,22 +41,12 @@ func AllLog(c *gin.Context) {
 
 // AddLog 添加日志
 func AddLog(c *gin.Context) {
-	//通过用户id创建项目
-	username, err := service.GetUsername(c)
-	if err != nil {
-		log.Printf("[GetUserInfo] failed err=%+v", err)
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": "token有误",
-		})
-		return
-	}
 	//获取项目名称
 	projectName, _ := c.GetQuery("project")
 	log.Printf("[AddLog] projectName=%+v", projectName)
 
 	var logRequest service.LogRequest
-	err = c.ShouldBind(&logRequest)
+	err := c.ShouldBind(&logRequest)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
@@ -64,7 +54,7 @@ func AddLog(c *gin.Context) {
 		})
 		return
 	}
-	err = service.AddLog(username, projectName, logRequest)
+	err = service.AddLog(projectName, logRequest)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
