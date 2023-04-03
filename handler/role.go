@@ -32,8 +32,6 @@ func AddRole(c *gin.Context) {
 	log.Printf("[AddRole] projectName=%+v", projectName)
 	//获取数据
 	var newRole service.RoleStruct
-	err1 := c.ShouldBind(&newRole)
-	log.Printf("[AddRole] newRole=%+v", newRole)
 	newRole.Description = new(string)
 	newRole.WorkDir = new(string)
 	newRole.Code.File = new(service.UploadedFile)
@@ -43,6 +41,8 @@ func AddRole(c *gin.Context) {
 	newRole.Image.Git = new(service.GitRepository)
 	newRole.Image.Archive = new(service.UploadedFile)
 	newRole.Image.Dockerfile = new(service.UploadedFile)
+	err1 := c.ShouldBind(&newRole)
+	log.Printf("[AddRole] newRole=%+v", newRole)
 	if err1 != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
@@ -80,8 +80,9 @@ func AllRole(c *gin.Context) {
 		return
 	}
 	log.Printf("[GetUserInfo] success username=%+v", username)
+	projectName := c.Query("project")
 	//service层获取用户的角色列表数据
-	returnData, err1 := service.GetAllRole(username)
+	returnData, err1 := service.GetAllRole(username, projectName)
 	//返回角色数据
 	if err1 != nil {
 		c.JSON(http.StatusOK, gin.H{
