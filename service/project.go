@@ -295,13 +295,6 @@ func cmdRun(c string) {
 	}
 
 	fmt.Println(cmd.Args) //查看当前执行命令
-
-	cmdPid := cmd.Process.Pid //查看命令pid
-	fmt.Printf("pid:%d", cmdPid)
-	err := cmd.Wait()
-	if err != nil {
-		fmt.Printf("Command finished with error: %v\n", err)
-	}
 }
 
 func cmd(c string) {
