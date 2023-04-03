@@ -295,6 +295,11 @@ func cmdRun(c string) {
 	}
 
 	fmt.Println(cmd.Args) //查看当前执行命令
+	err := cmd.Wait()
+	if err != nil {
+		fmt.Printf("Command finished with error: %v\n", err)
+	}
+	return
 }
 
 func cmd(c string) {
