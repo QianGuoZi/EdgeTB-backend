@@ -23,6 +23,6 @@ func InitDB() {
 		panic(err)
 	}
 	err = DB.AutoMigrate(&User{}, &Dataset{}, &Role{}, &Code{}, &PyDep{}, &Image{}, &PlatformImage{}, &OutputItem{},
-		&Project{}, &File{}, &Config{}, &Node{}, &Log{}, &Task{})
+		&Project{}, &File{}, &Config{}, &Node{}, &Log{}, &Task{}, &Link{})
 	log.Println(err)
 }
