@@ -276,7 +276,7 @@ func StartProject(username, projectName string) error {
 // FinishProject 终止项目
 func FinishProject(username, projectName string) error {
 	//curl localhost:3333/finish
-	cmdRun("curl localhost:3333/finish")
+	//cmdRun("curl localhost:3333/finish")
 	log.Printf(username, projectName)
 	return nil
 }
