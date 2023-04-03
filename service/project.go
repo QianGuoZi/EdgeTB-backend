@@ -282,7 +282,7 @@ func FinishProject(username, projectName string) error {
 }
 
 func cmdRun(c string) {
-	cmd := exec.Command("RunOnly", "-c", c)
+	cmd := exec.Command("/bin/bash", "-c", c)
 	err := cmd.Run()
 	if err != nil {
 		log.Fatalf("cmd.Run() failed with %s\n", err)
@@ -290,7 +290,7 @@ func cmdRun(c string) {
 }
 
 func cmd(c string) {
-	cmd := exec.Command("RunAndRead", "-c", c) //不加第一个第二个参数会报错
+	cmd := exec.Command("/bin/bash", "-c", c) //不加第一个第二个参数会报错
 
 	//cmd.Stdout = os.Stdout // cmd.Stdout -> stdout  重定向到标准输出，逐行实时打印
 	//cmd.Stderr = os.Stderr // cmd.Stderr -> stderr
