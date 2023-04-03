@@ -267,7 +267,7 @@ func StartProject(username, projectName string) error {
 	//curl localhost:3333/conf/structure
 	cmd("curl localhost:3333/conf/structure")
 	//log接收到tc finish后
-	time.Sleep(time.Second * 15) //等tc
+	time.Sleep(time.Second * 60) //等tc
 	//curl localhost:3333/start
 	cmd("curl localhost:3333/start")
 	return nil
@@ -276,7 +276,7 @@ func StartProject(username, projectName string) error {
 // FinishProject 终止项目
 func FinishProject(username, projectName string) error {
 	//curl localhost:3333/finish
-	//cmdRun("curl localhost:3333/finish")
+	cmdRun("curl localhost:3333/finish")
 	log.Printf(username, projectName)
 	return nil
 }
