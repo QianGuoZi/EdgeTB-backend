@@ -130,8 +130,9 @@ func GetProjectConfigList(username, projectName string) ([]ConfigResponse, error
 }
 
 type ConfigYamlStruct struct {
-	Links      ConfigYamlLink       `yaml:"links"`
-	Deployment ConfigYamlDeployment `yaml:"deployment"`
+	Links      ConfigYamlLink            `yaml:"links"`
+	Deployment ConfigYamlDeployment      `yaml:"deployment"`
+	Roles      map[string]ConfigYamlRole `yaml:"roles"`
 }
 
 type ConfigYamlLink map[string]map[string]string // source->target->bandwidthmbps
@@ -144,6 +145,12 @@ type ConfigYamlNode struct {
 	Role string `yaml:"role"`
 	Cpu  int    `yaml:"cpu"`
 	Ram  int    `yaml:"ram"`
+}
+
+type ConfigYamlRole struct {
+	Name    string `yaml:"name"`
+	RootDir string `yaml:"root_dir"`
+	Cmd     string `yaml:"cmd"`
 }
 
 // CreateConfigYaml 创建yaml文件
@@ -193,9 +200,25 @@ func CreateConfigYaml(username, projectName string) error {
 	emulatedYaml := ConfigYamlDeployment{
 		Emulated: configYamlNode,
 	}
+
+	roles, err := dal.GetAllRoleByProjectId(projectId)
+	if err != nil {
+		log.Printf("[CreateConfigYaml] 服务获取项目配置角色信息失败")
+		return errors.New("服务获取项目配置角色信息失败")
+	}
+	roleYaml := make(map[string]ConfigYamlRole)
+	for _, role := range roles {
+		roleYaml[role.RoleName] = ConfigYamlRole{
+			Name:    role.RoleName,
+			RootDir: role.WorkDir,
+			Cmd:     role.RunCommand,
+		}
+	}
+
 	configYaml := ConfigYamlStruct{
 		Links:      configYamlLink,
 		Deployment: emulatedYaml,
+		Roles:      roleYaml,
 	}
 	//fileName := username + "_" + projectName + "_" + strconv.Itoa(int(configInfo.Id)) + "_config.yaml"
 	err = GenerateYaml("config.yaml", "EdgeTB", configYaml)

@@ -94,6 +94,19 @@ func GetAllRole(userId int64) ([]Role, error) {
 	return roles, nil
 }
 
+func GetAllRoleByProjectId(projectId int64) ([]Role, error) {
+	var roles []Role
+	// 全部字段
+	result := DB.Model(&Role{}).Where("project_id = ?", projectId).Find(&roles)
+	if result.Error != nil {
+		log.Printf("[GetAllRoleInfo] 数据库获取角色列表信息失败")
+		return roles, result.Error
+	}
+	listLen := len(roles)
+	log.Printf("[GetAllRoleInfo] 数据库获取角色列表信息成功，长度为：%+v", listLen)
+	return roles, nil
+}
+
 // GetRoleInfo 获取角色详细信息
 func GetRoleInfo(userId int64, roleName string) (Role, error) {
 	var roleInfo Role
@@ -214,7 +227,7 @@ func UpdateRolePyDep(roleId int64, pyDepSource, pyDepPackage, pyDepGitUrl, pyDep
 }
 
 // UpdateRoleImage 更新角色image信息
-//TODO：imageName的更新未确定
+// TODO：imageName的更新未确定
 func UpdateRoleImage(roleId int64, imageSource, imageName, imageDockerfileUrl, imageDockerfileName,
 	imageArchiveUrl, imageArchiveName, imageGitUrl, imageGitFilepath string, imageDockerfileSize, imageArchiveSize int64) error {
 	if imageSource == "platform" || imageSource == "dockerHub" {
