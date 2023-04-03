@@ -34,7 +34,7 @@ func main() {
 	//初始化路由
 	initRouter(r)
 
-	err := r.Run("127.0.0.1:3000") // http端口
+	err := r.Run(":3000") // http端口
 	if err != nil {
 		panic(err)
 	}

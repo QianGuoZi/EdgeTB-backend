@@ -1,0 +1,8 @@
+edgetb:
+    links: {}
+    deployment:
+        emulated:
+            "1":
+                role: "1"
+                cpu: 1
+                ram: 512
