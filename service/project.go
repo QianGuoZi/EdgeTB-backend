@@ -261,7 +261,7 @@ func StartProject(username, projectName string) error {
 	//文件位置./ProjectFile/Structure 执行python3 gl_structure_conf.py -s structure.json
 	cmd("python3 /home/qianguo/controller/dml_tool/gl_structure_conf.py -s /home/qianguo/controller/dml_tool/gl_structure.json")
 	//运行controller
-	cmd("sudo PROJECT_ID=" + strconv.Itoa(int(projectId)) + "BACKEND_ADDR=127.0.0.1:3000 python3 /home/qianguo/controller/gl_run.py\n")
+	cmdRun("sudo PROJECT_ID=" + strconv.Itoa(int(projectId)) + "BACKEND_ADDR=127.0.0.1:3000 python3 /home/qianguo/controller/gl_run.py\n")
 	//curl localhost:3333/conf/dataset
 	cmd("curl localhost:3333/conf/dataset")
 	//curl localhost:3333/conf/structure
@@ -282,12 +282,26 @@ func FinishProject(username, projectName string) error {
 }
 
 func cmdRun(c string) {
-	cmd := exec.Command("/bin/bash", "-c", c)
-	err := cmd.Run()
-	if err != nil {
-		log.Fatalf("cmd.Run() failed with %s\n", err)
+	cmd := exec.Command("/bin/bash", "-c", c) //不加第一个第二个参数会报错
+
+	//cmd.Stdout = os.Stdout // cmd.Stdout -> stdout  重定向到标准输出，逐行实时打印
+	//cmd.Stderr = os.Stderr // cmd.Stderr -> stderr
+	//也可以重定向文件 cmd.Stderr= fd (文件打开的描述符即可)
+
+	stdout, _ := cmd.StdoutPipe() //创建输出管道
+	defer stdout.Close()
+	if err := cmd.Start(); err != nil {
+		log.Fatalf("cmd.Start: %v", err)
 	}
-	log.Printf(c)
+
+	fmt.Println(cmd.Args) //查看当前执行命令
+
+	cmdPid := cmd.Process.Pid //查看命令pid
+	fmt.Printf("pid:%d", cmdPid)
+	err := cmd.Wait()
+	if err != nil {
+		fmt.Printf("Command finished with error: %v\n", err)
+	}
 }
 
 func cmd(c string) {
