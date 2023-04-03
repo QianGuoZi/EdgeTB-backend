@@ -261,7 +261,7 @@ func StartProject(username, projectName string) error {
 	//文件位置./ProjectFile/Structure 执行python3 gl_structure_conf.py -s structure.json
 	cmd("python3 /home/qianguo/controller/dml_tool/gl_structure_conf.py -s /home/qianguo/controller/dml_tool/gl_structure.json")
 	//运行controller
-	go cmdRun("sudo PROJECT_ID=" + strconv.Itoa(int(projectId)) + "BACKEND_ADDR=127.0.0.1:3000 python3 /home/qianguo/controller/gl_run.py\n")
+	go cmd("sudo PROJECT_ID=" + strconv.Itoa(int(projectId)) + "BACKEND_ADDR=127.0.0.1:3000 python3 /home/qianguo/controller/gl_run.py\n")
 	//curl localhost:3333/conf/dataset
 	time.Sleep(time.Second * 30)
 	cmd("curl localhost:3333/conf/dataset")
@@ -277,7 +277,7 @@ func StartProject(username, projectName string) error {
 // FinishProject 终止项目
 func FinishProject(username, projectName string) error {
 	//curl localhost:3333/finish
-	cmdRun("curl localhost:3333/finish")
+	cmd("curl localhost:3333/finish")
 	log.Printf(username, projectName)
 	return nil
 }
