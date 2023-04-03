@@ -287,6 +287,7 @@ func cmdRun(c string) {
 	if err != nil {
 		log.Fatalf("cmd.Run() failed with %s\n", err)
 	}
+	log.Printf(c)
 }
 
 func cmd(c string) {
