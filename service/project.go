@@ -263,6 +263,7 @@ func StartProject(username, projectName string) error {
 	//运行controller
 	go cmdRun("sudo PROJECT_ID=" + strconv.Itoa(int(projectId)) + "BACKEND_ADDR=127.0.0.1:3000 python3 /home/qianguo/controller/gl_run.py\n")
 	//curl localhost:3333/conf/dataset
+	time.Sleep(time.Second * 30)
 	cmd("curl localhost:3333/conf/dataset")
 	//curl localhost:3333/conf/structure
 	cmd("curl localhost:3333/conf/structure")
