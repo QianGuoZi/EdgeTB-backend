@@ -8,7 +8,9 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
 	"syscall"
+	"time"
 )
 
 type ProjectListResponse struct {
@@ -232,38 +234,63 @@ func UploadDatasetSplitter(filePath string) (string, string, int, error) {
 
 // StartProject 运行项目
 func StartProject(username, projectName string) error {
+	//通过username获取id
+	userId, err := dal.GetUserId(username)
+	if err != nil {
+		log.Printf("[GetProjectDetail] 服务获取用户id失败")
+		return errors.New("服务获取用户id失败")
+	}
+	projectId, err1 := dal.GetProjectId(projectName, userId)
+	if err1 != nil {
+		log.Printf("[GetProjectDetail] 服务获取项目id失败")
+		return errors.New("服务获取项目id失败")
+	}
 	//创建yaml文件
-	err := CreateConfigYaml(username, projectName)
+	err = CreateConfigYaml(username, projectName)
 	if err != nil {
 		return err
 	}
-	return nil
-	cmd("ls -a")
 	//role文件
 	//TODO:装模做样？
 	//manager文件
 	//文件位置./ProjectFile/Manager
 	//数据集切分脚本文件
-	//文件位置./ProjectFile/DatasetSplitter
-	//os执行python3 dataset_conf.py -d dataset.json
+	//文件位置./ProjectFile/DatasetSplitter 执行python3 dataset_conf.py -d dataset.json
+	cmdRun("python3 /home/qianguo/controller/dml_tool/dataset_conf.py -d /home/qianguo/controller/dml_tool/gl_dataset.json")
 	//DML结构配置脚本文件
-	//文件位置./ProjectFile/Structure
-	//os执行python3 gl_structure_conf.py -s structure.json
+	//文件位置./ProjectFile/Structure 执行python3 gl_structure_conf.py -s structure.json
+	cmdRun("python3 /home/qianguo/controller/dml_tool/gl_structure_conf.py -s /home/qianguo/controller/dml_tool/gl_structure.json")
+	//运行controller
+	cmd("sudo PROJECT_ID=" + strconv.Itoa(int(projectId)) + "BACKEND_ADDR=127.0.0.1:3000 python3 gl_run.py\n")
 	//curl localhost:3333/conf/dataset
+	cmd("curl localhost:3333/conf/dataset")
 	//curl localhost:3333/conf/structure
+	cmd("curl localhost:3333/conf/structure")
 	//log接收到tc finish后
+	time.Sleep(time.Second * 15) //等tc
 	//curl localhost:3333/start
+	cmd("curl localhost:3333/start")
+	return nil
 }
 
 // FinishProject 终止项目
 func FinishProject(username, projectName string) error {
 	//curl localhost:3333/finish
+	cmd("curl localhost:3333/finish")
 	log.Printf(username, projectName)
 	return nil
 }
 
+func cmdRun(c string) {
+	cmd := exec.Command("RunOnly", "-c", c)
+	err := cmd.Run()
+	if err != nil {
+		log.Fatalf("cmd.Run() failed with %s\n", err)
+	}
+}
+
 func cmd(c string) {
-	cmd := exec.Command("/bin/bash", "-c", c) //不加第一个第二个参数会报错
+	cmd := exec.Command("RunAndRead", "-c", c) //不加第一个第二个参数会报错
 
 	//cmd.Stdout = os.Stdout // cmd.Stdout -> stdout  重定向到标准输出，逐行实时打印
 	//cmd.Stderr = os.Stderr // cmd.Stderr -> stderr
@@ -281,8 +308,8 @@ func cmd(c string) {
 	fmt.Println(cmdPid)
 
 	result, _ := ioutil.ReadAll(stdout) // 读取输出结果
-	resdata := string(result)
-	fmt.Println(resdata)
+	resData := string(result)
+	fmt.Println(resData)
 
 	var res int
 	if err := cmd.Wait(); err != nil {
@@ -291,6 +318,5 @@ func cmd(c string) {
 			res = ex.Sys().(syscall.WaitStatus).ExitStatus() //获取命令执行返回状态，相当于shell: echo $?
 		}
 	}
-
 	fmt.Println(res)
 }
