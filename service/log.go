@@ -35,6 +35,19 @@ func AddLog(projectName string, logRequest LogRequest) error {
 	return nil
 }
 
+func AddLogByProjectId(projectId int64, logRequest LogRequest) error {
+	var logInfo dal.Log
+	logInfo.ProjectId = projectId
+	logInfo.NodeName = logRequest.NodeName
+	logInfo.Content = logRequest.Content
+	_, err2 := dal.AddLog(logInfo)
+	if err2 != nil {
+		log.Printf("[AddLog] 服务创建日志失败")
+		return errors.New("服务创建日志失败")
+	}
+	return nil
+}
+
 func AllLog(username, projectName string) ([]LogList, error) {
 	var logL []LogList
 	//通过username获取id

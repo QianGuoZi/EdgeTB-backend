@@ -2,9 +2,11 @@ package handler
 
 import (
 	"EdgeTB-backend/service"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 // AllLog 获取日志
@@ -43,6 +45,7 @@ func AllLog(c *gin.Context) {
 func AddLog(c *gin.Context) {
 	//获取项目名称
 	projectName, _ := c.GetQuery("project")
+	projectIdStr, _ := c.GetQuery("projectId")
 	log.Printf("[AddLog] projectName=%+v", projectName)
 
 	var logRequest service.LogRequest
@@ -54,7 +57,21 @@ func AddLog(c *gin.Context) {
 		})
 		return
 	}
-	err = service.AddLog(projectName, logRequest)
+
+	// 优先使用projectId
+	if projectIdStr != "" {
+		projectId, err2 := strconv.ParseInt(projectIdStr, 10, 64)
+		if err2 != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"success": false,
+				"message": "项目id格式有误",
+			})
+			return
+		}
+		err = service.AddLogByProjectId(projectId, logRequest)
+	} else {
+		err = service.AddLog(projectName, logRequest)
+	}
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,

@@ -116,12 +116,9 @@ type File struct {
 }
 
 type Config struct {
-	Id             int64     `json:"id,omitempty" gorm:"primaryKey"`
-	LinkType       string    `json:"link_type,omitempty" gorm:"type:varchar(100)"`
-	BandwidthUpper int64     `json:"bandwidth_upper,omitempty" gorm:"type:int"`
-	BandwidthLower int64     `json:"bandwidth_lower,omitempty" gorm:"type:int"`
-	ProjectId      int64     `json:"project_id,omitempty" gorm:"type:int"`
-	CreatedAt      time.Time `json:"-" gorm:"index:,sort:desc"`
+	Id        int64     `json:"id,omitempty" gorm:"primaryKey"`
+	ProjectId int64     `json:"project_id,omitempty" gorm:"type:int"`
+	CreatedAt time.Time `json:"-" gorm:"index:,sort:desc"`
 }
 
 type Node struct {
@@ -132,6 +129,15 @@ type Node struct {
 	RoleName  string    `json:"role_name,omitempty" gorm:"type:varchar(100)"`
 	ConfigId  int64     `json:"config_id,omitempty" gorm:"type:int"`
 	CreatedAt time.Time `json:"-" gorm:"index:,sort:desc"`
+}
+
+type Link struct {
+	Id             int64     `json:"id,omitempty" gorm:"primaryKey"`
+	ConfigId       int64     `json:"config_id,omitempty" gorm:"type:int"`
+	SourceNodeName string    `json:"source_node_name,omitempty" gorm:"type:varchar(100)"`
+	TargetNodeName string    `json:"target_node_name,omitempty" gorm:"type:varchar(100)"`
+	Bandwidth      int       `json:"bandwidth,omitempty" gorm:"type:int"`
+	CreatedAt      time.Time `json:"-" gorm:"index:,sort:desc"`
 }
 
 type Log struct {
