@@ -391,7 +391,7 @@ func prepareFilesForEdgeTB(projectId int64) (string, error) {
 		return "", errors.New("服务获取Manager文件失败")
 	}
 	log.Printf("拷贝Manager文件")
-	cmd(fmt.Sprintf("cp %s %s/manager.py", managerFile.Url, projectPath))
+	cmd(fmt.Sprintf("cp %s %s/gl_manager.py", managerFile.Url, projectPath))
 
 	// dataset和structure
 	dmlToolPath := fmt.Sprintf("%s/dml_tool", projectPath)
@@ -415,5 +415,6 @@ func prepareFilesForEdgeTB(projectId int64) (string, error) {
 	log.Printf("解压splitter文件")
 	cmd(fmt.Sprintf("unzip -o -d %s %s", dmlToolPath, splitterFile.Url))
 
+	cmd(fmt.Sprintf("cp config.yaml %s/config.yaml", projectPath))
 	return projectPath, nil
 }
