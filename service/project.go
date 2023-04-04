@@ -250,7 +250,7 @@ func StartProject(username, projectName string) error {
 	if err != nil {
 		return err
 	}
-	dir, err := prepareFilesForEdgetb(projectId)
+	dir, err := prepareFilesForEdgeTB(projectId)
 	if err != nil {
 		return err
 	}
@@ -273,12 +273,12 @@ func StartProject(username, projectName string) error {
 	//运行controller
 	go cmd("sudo PROJECT_ID=" + strconv.Itoa(int(projectId)) + " BACKEND_ADDR=127.0.0.1:3000 python3 /home/qianguo/controller/gl_run.py PYTHONUNBUFFERED=1")
 	//curl localhost:3333/conf/dataset
-	time.Sleep(time.Second * 30)
+	time.Sleep(time.Second * 15)
 	cmd("curl localhost:3333/conf/dataset")
 	//curl localhost:3333/conf/structure
 	cmd("curl localhost:3333/conf/structure")
 	//log接收到tc finish后
-	time.Sleep(time.Second * 60) //等tc
+	time.Sleep(time.Second * 30) //等tc
 	//curl localhost:3333/start
 	cmd("curl localhost:3333/start")
 	return nil
@@ -345,36 +345,37 @@ func cmd(c string) {
 	fmt.Println(res)
 }
 
-func prepareFilesForEdgetb(projectId int64) (string, error) {
+func prepareFilesForEdgeTB(projectId int64) (string, error) {
 	project, err := dal.GetProjectInfoById(projectId)
 	if err != nil {
-		log.Printf("[gatherProjectFiles] 服务获取项目信息失败")
+		log.Printf("[prepareFilesForEdgeTB] 服务获取项目信息失败")
 		return "", errors.New("服务获取项目信息失败")
 	}
 	//创建项目文件夹
-	projectPath := fmt.Sprintf("./EdgetbFiles/%d", projectId)
-	err = os.MkdirAll(projectPath, 0777)
-	if err != nil {
-		log.Printf("[gatherProjectFiles] 服务创建项目文件夹失败")
-		return "", errors.New("服务创建项目文件夹失败")
-	}
+	//projectPath := fmt.Sprintf("./EdgeTBFiles/%d", projectId)
+	//err = os.MkdirAll(projectPath, 0777)
+	//if err != nil {
+	//	log.Printf("[prepareFilesForEdgeTB] 服务创建项目文件夹失败")
+	//	return "", errors.New("服务创建项目文件夹失败")
+	//}
+	projectPath := fmt.Sprintf("../../controller")
 
 	// 角色
 	dmlAppPath := fmt.Sprintf("%s/dml_app", projectPath)
 	err = os.MkdirAll(dmlAppPath, 0777)
 	if err != nil {
-		log.Printf("[gatherProjectFiles] 服务创建项目文件夹失败")
+		log.Printf("[prepareFilesForEdgeTB] 服务创建项目文件夹失败")
 		return "", errors.New("服务创建项目文件夹失败")
 	}
 	roles, err := dal.GetAllRoleByProjectId(projectId)
 	if err != nil {
-		log.Printf("[gatherProjectFiles] 服务获取角色信息失败")
+		log.Printf("[prepareFilesForEdgeTB] 服务获取角色信息失败")
 		return "", errors.New("服务获取角色信息失败")
 	}
 	for _, role := range roles {
 		code, err := dal.GetRoleCode(role.Id)
 		if err != nil {
-			log.Printf("[gatherProjectFiles] 服务获取代码信息失败")
+			log.Printf("[prepareFilesForEdgeTB] 服务获取代码信息失败")
 			return "", errors.New("服务获取代码信息失败")
 		}
 
@@ -386,7 +387,7 @@ func prepareFilesForEdgetb(projectId int64) (string, error) {
 	// manager
 	managerFile, err := dal.GetFileInfo(project.ManagerFileId)
 	if err != nil {
-		log.Printf("[gatherProjectFiles] 服务获取Manager文件失败")
+		log.Printf("[prepareFilesForEdgeTB] 服务获取Manager文件失败")
 		return "", errors.New("服务获取Manager文件失败")
 	}
 	log.Printf("拷贝Manager文件")
@@ -396,19 +397,19 @@ func prepareFilesForEdgetb(projectId int64) (string, error) {
 	dmlToolPath := fmt.Sprintf("%s/dml_tool", projectPath)
 	err = os.MkdirAll(dmlToolPath, 0777)
 	if err != nil {
-		log.Printf("[gatherProjectFiles] 服务创建项目文件夹dml_tool失败")
+		log.Printf("[prepareFilesForEdgeTB] 服务创建项目文件夹dml_tool失败")
 		return "", errors.New("服务创建项目文件夹dml_tool失败")
 	}
 	structureFile, err := dal.GetFileInfo(project.StructureFileId)
 	if err != nil {
-		log.Printf("[gatherProjectFiles] 服务获取structure文件失败")
+		log.Printf("[prepareFilesForEdgeTB] 服务获取structure文件失败")
 		return "", errors.New("服务获取structure文件失败")
 	}
 	log.Printf("解压structure文件")
 	cmd(fmt.Sprintf("unzip -o -d %s %s", dmlToolPath, structureFile.Url))
 	splitterFile, err := dal.GetFileInfo(project.DatasetSplitterFileId)
 	if err != nil {
-		log.Printf("[gatherProjectFiles] 服务获取splitter文件失败")
+		log.Printf("[prepareFilesForEdgeTB] 服务获取splitter文件失败")
 		return "", errors.New("服务获取splitter文件失败")
 	}
 	log.Printf("解压splitter文件")
