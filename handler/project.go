@@ -6,8 +6,6 @@ import (
 	"log"
 	"net/http"
 	"path"
-	"strconv"
-	"time"
 )
 
 type ProjectAddRequest struct {
@@ -194,9 +192,11 @@ func UploadManager(c *gin.Context) {
 	//文件保存目录
 	saveDir = "./ProjectFile/Manager"
 	//保存的文件名称
-	dayStr := time.Now().String()
-	timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
-	saveName = username + "_" + dayStr[0:10] + "_" + timeStamp + "_" + file.Filename
+	//dayStr := time.Now().String()
+	//timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
+	//saveName = username + "_" + dayStr[0:10] + "_" + timeStamp + "_" + file.Filename
+	log.Printf(username)
+	saveName = file.Filename
 	//文件保存的路径
 	savePath = saveDir + "/" + saveName
 	log.Printf("[UploadManager] savePath=%+v", savePath)
@@ -278,9 +278,11 @@ func UploadStructure(c *gin.Context) {
 	//文件保存目录
 	saveDir = "./ProjectFile/Structure"
 	//保存的文件名称
-	dayStr := time.Now().String()
-	timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
-	saveName = username + "_" + dayStr[0:10] + "_" + timeStamp + "_" + file.Filename
+	//dayStr := time.Now().String()
+	//timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
+	//saveName = username + "_" + dayStr[0:10] + "_" + timeStamp + "_" + file.Filename
+	log.Printf(username)
+	saveName = file.Filename
 	//文件保存的路径
 	savePath = saveDir + "/" + saveName
 	log.Printf("[UploadStructure] savePath=%+v", savePath)
@@ -362,9 +364,11 @@ func UploadDatasetSplitter(c *gin.Context) {
 	//文件保存目录
 	saveDir = "./ProjectFile/DatasetSplitter"
 	//保存的文件名称
-	dayStr := time.Now().String()
-	timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
-	saveName = username + "_" + dayStr[0:10] + "_" + timeStamp + "_" + file.Filename
+	//dayStr := time.Now().String()
+	//timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
+	//saveName = username + "_" + dayStr[0:10] + "_" + timeStamp + "_" + file.Filename
+	log.Printf(username)
+	saveName = file.Filename
 	//文件保存的路径
 	savePath = saveDir + "/" + saveName
 	log.Printf("[UploadDatasetSplitter] savePath=%+v", savePath)

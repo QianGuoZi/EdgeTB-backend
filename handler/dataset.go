@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"path"
 	"strconv"
-	"time"
 )
 
 type PublicListReturn struct {
@@ -294,9 +293,11 @@ func UploadDataset(c *gin.Context) {
 	//文件保存目录
 	saveDir = "./DatasetFile"
 	//保存的文件名称
-	dayStr := time.Now().String()
-	timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
-	saveName = username + "_" + dayStr[0:10] + "_" + timeStamp + "_" + file.Filename
+	//dayStr := time.Now().String()
+	//timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
+	//saveName = username + "_" + dayStr[0:10] + "_" + timeStamp + "_" + file.Filename
+	log.Printf(username)
+	saveName = file.Filename
 	//文件保存的路径
 	savePath = saveDir + "/" + saveName
 	log.Printf("[UploadDataset] savePath=%+v", savePath)
