@@ -122,10 +122,10 @@ func AddRole(addRoleRequest RoleStruct, username, projectName string) error {
 		return errors.New("添加角色image依赖信息失败")
 	}
 	//outputItem
-	err = AddRoleOutputItem(addRoleRequest.OutputItems, roleId)
-	if err != nil {
-		return errors.New("添加角色输出信息失败")
-	}
+	//err = AddRoleOutputItem(addRoleRequest.OutputItems, roleId)
+	//if err != nil {
+	//	return errors.New("添加角色输出信息失败")
+	//}
 	return nil
 }
 
