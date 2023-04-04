@@ -24,7 +24,7 @@ func GetAllTasks(c *gin.Context) {
 		return
 	}
 	log.Printf("[GetUserInfo] success username=%+v", username)
-	
+
 	projectName, _ := c.GetQuery("project")
 	log.Printf("[AddTask] projectName=%+v", projectName)
 
@@ -146,7 +146,7 @@ func StartTask(c *gin.Context) {
 		})
 		return
 	}
-	project.CurrentConfigId = task.Id
+	project.CurrentConfigId = task.ConfigId
 	project.DatasetId = task.DatasetId
 	project.DatasetSplitterFileId = task.DatasetSplitterFileId
 	dal.DB.Save(&project)

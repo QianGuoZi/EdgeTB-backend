@@ -230,7 +230,7 @@ func AddRoleOutputItem(outputItems []OutputItem, roleId int64) error {
 }
 
 // GetAllRole 获取用户所有角色基本信息
-func GetAllRole(username string) ([]RoleListResponse, error) {
+func GetAllRole(username string, projectName string) ([]RoleListResponse, error) {
 	var list []RoleListResponse
 	//通过username获取id
 	userId, err := dal.GetUserId(username)
@@ -239,7 +239,19 @@ func GetAllRole(username string) ([]RoleListResponse, error) {
 		return list, errors.New("服务获取用户id失败")
 	}
 	//获取name, description, pyVersion, imageId
-	roleList, err1 := dal.GetAllRole(userId)
+	var roleList []dal.Role
+	var err1 error
+	if projectName == "" {
+		roleList, err1 = dal.GetAllRole(userId)
+	} else {
+		var projectId int64
+		projectId, err1 = dal.GetProjectId(projectName, userId)
+		if err1 != nil {
+			log.Printf("[GetAllRole] 服务获取项目id失败")
+			return list, errors.New("服务获取项目id失败")
+		}
+		roleList, err1 = dal.GetAllRoleByProjectId(projectId)
+	}
 	if err1 != nil {
 		log.Printf("[GetAllRole] 服务获取用户角色列表失败")
 		return list, errors.New("服务获取用户角色列表失败")
@@ -255,7 +267,7 @@ func GetAllRole(username string) ([]RoleListResponse, error) {
 	return responseList, nil
 }
 
-//GetRoleDetail 获取角色详细信息
+// GetRoleDetail 获取角色详细信息
 func GetRoleDetail(username, roleName string) (RoleStruct, error) {
 	var roleResult *RoleStruct
 	roleResult = new(RoleStruct)
