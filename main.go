@@ -1,6 +1,7 @@
-package EdgeTB_backend
+package main
 
 import (
+	"EdgeTB-backend/dal"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -8,24 +9,39 @@ import (
 )
 
 func main() {
+	//前端网址：https://liwh011.github.io/edgetb-openplatform-frontend/
 	gin.SetMode(gin.ReleaseMode)
 
-	//dal.InitDB()
-	//
-	//dal.InitTls()
+	//初始化数据库
+	dal.InitDB()
+
+	// {
+	// 	d1 := dal.Dataset{
+	// 		State:       0,
+	// 		DatasetName: "d1",
+	// 		Type:        "text",
+	// 		Description: "d1",
+	// 		FileName:    "d1",
+	// 		Size:        114514,
+	// 		Url:         "https://www.baidu.com",
+	// 	}
+	// 	dal.DB.Save(&d1)
+	// }
 
 	r := gin.Default()
 	r.Use(Cors())
 
+	//初始化路由
 	initRouter(r)
 
-	err := r.Run(":8080") // http端口
+	err := r.Run(":3000") // http端口
 	if err != nil {
 		panic(err)
 	}
 
 }
 
+// Cors 跨域
 func Cors() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		method := context.Request.Method
@@ -49,7 +65,7 @@ func Cors() gin.HandlerFunc {
 			context.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers,Cache-Control,Content-Language,Content-Type,Expires,Last-Modified,Pragma,FooBar")
 			context.Header("Access-Control-Max-Age", "172800")
 			context.Header("Access-Control-Allow-Credentials", "false")
-			context.Set("content-type", "application/json") //// 设置返回格式是json
+			context.Set("content-type", "application/json") // 设置返回格式是json
 		}
 
 		if method == "OPTIONS" {
